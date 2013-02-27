@@ -3,19 +3,19 @@ require 'fileutils'
 class Vigil
 
   
-  def initialize(shell_class=nil)
-    @x = (shell_class || Class.new do
-        def _system cmd
-          puts "# #{cmd}"
-          system cmd or raise "Failed"
-        end
-        
-        def __system cmd
-          puts "# #{cmd}"
-          system cmd
-          return $? == 0
-        end
-      end).new
+  def initialize(shell=nil)
+    @x = shell || Class.new do
+      def _system cmd
+        puts "# #{cmd}"
+        system cmd or raise "Failed"
+      end
+      
+      def __system cmd
+        puts "# #{cmd}"
+        system cmd
+        return $? == 0
+      end
+    end.new
   end
 
 
