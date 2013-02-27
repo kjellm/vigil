@@ -37,10 +37,13 @@ _system "git checkout vigil"  #FIXME
 
 _system "ln -s #{File.expand_path('../../iso')}"
 
+puts "### Step 1"
 previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}.box"
-if !File.exists?(previous_revision_box_name) or
+current_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id}.box"
+if File.exists?(current_revision_box_name)
+elsif !File.exists?(previous_revision_box_name) or
     !__system "git diff --quiet HEAD^ -- definitions" #FIXME
-  _system "vagrant basebox build '#{project}'"
+  _system "vagrant basebox build --force '#{project}'"
   _system "vagrant basebox validate '#{project}'"
   _system "vagrant basebox export '#{project}'"
   _system "mv #{project}.box #{run_dir_boxes}/#{project}-#{revision_id}.box"
@@ -49,6 +52,7 @@ else
   _system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{project}-#{revision_id}.box"
 end
 
+puts "### Step 2"
 previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_no_gems.pkg"
 boxname = "#{project}-#{revision_id}"
 if !File.exists?(previous_revision_box_name) or
@@ -62,6 +66,7 @@ else
   _system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{boxname}_no_gems.pkg"
 end
 
+puts "### Step 3"
 previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_complete.pkg"
 if !File.exists?(previous_revision_box_name) or
     !__system "git diff --quiet HEAD^ -- Gemfile*" #FIXME
@@ -76,7 +81,10 @@ else
   _system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{project}-#{revision_id}_complete.pkg"
 end
 
+puts "### Step 4"
 _system "vagrant box add --force '#{project}-#{revision_id}_complete' '#{run_dir_boxes}/#{project}-#{revision_id}_complete.pkg'"
 _system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}_complete\\"")' Vagrantfile}
 _system "vagrant up"
+
+puts "### Step 5"
 _system "vagrant ssh -c 'cd /vagrant; rake test'"
