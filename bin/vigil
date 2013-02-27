@@ -1,0 +1,82 @@
+#! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+require 'fileutils'
+
+def _system cmd
+  puts "# #{cmd}"
+  system cmd or raise "Failed"
+end
+
+def __system cmd
+  puts "# #{cmd}"
+  system cmd
+  return $? == 0
+end
+
+revision_id = ARGV.first
+
+project_dir = '/Users/kjellm/projects/amedia/znork/'
+project = File.basename(project_dir)
+
+run_dir = File.expand_path 'run'
+run_dir_project = File.join(run_dir, project)
+run_dir_revision = File.join(run_dir_project, revision_id)
+run_dir_boxes = File.join(run_dir_project, 'boxes')
+
+raise "Failed" unless File.directory?(project_dir)
+
+FileUtils.mkdir_p run_dir_revision
+FileUtils.mkdir_p run_dir_boxes
+Dir.chdir run_dir_revision
+
+#TODO use grit for git stuff
+
+_system "git clone #{project_dir} ."
+_system "git checkout vigil"  #FIXME
+
+_system "ln -s #{File.expand_path('../../iso')}"
+
+previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}.box"
+if !File.exists?(previous_revision_box_name) or
+    !__system "git diff --quiet HEAD^ -- definitions" #FIXME
+  _system "vagrant basebox build '#{project}'"
+  _system "vagrant basebox validate '#{project}'"
+  _system "vagrant basebox export '#{project}'"
+  _system "mv #{project}.box #{run_dir_boxes}/#{project}-#{revision_id}.box"
+  _system "vagrant basebox destroy #{project}" #FIXME put in ensure block
+else
+  _system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{project}-#{revision_id}.box"
+end
+
+previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_no_gems.pkg"
+boxname = "#{project}-#{revision_id}"
+if !File.exists?(previous_revision_box_name) or
+    !__system "git diff --quiet HEAD^ -- manifests" #FIXME
+  _system "vagrant box add --force '#{boxname}' '#{run_dir_boxes}/#{boxname}.box'"
+  _system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}\\"")' Vagrantfile}
+  _system "vagrant up"
+  _system "vagrant package --output #{run_dir_boxes}/#{boxname}_no_gems.pkg"
+  _system "vagrant box remove #{boxname}"# remove #FIXME put in ensure block
+else
+  _system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{boxname}_no_gems.pkg"
+end
+
+previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_complete.pkg"
+if !File.exists?(previous_revision_box_name) or
+    !__system "git diff --quiet HEAD^ -- Gemfile*" #FIXME
+  _system "vagrant box add --force '#{project}-#{revision_id}_no_gems' '#{run_dir_boxes}/#{project}-#{revision_id}_no_gems.pkg'"
+  _system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}_no_gems\\"")' Vagrantfile}
+  _system "vagrant up"
+  _system "vagrant ssh -c 'sudo gem install bundler'"
+  _system "vagrant ssh -c 'cd /vagrant/; bundle install'"
+  _system "vagrant package --output #{run_dir_boxes}/#{project}-#{revision_id}_complete.pkg"
+  _system "vagrant box remove '#{project}-#{revision_id}_no_gems'"# remove #FIXME put in ensure block
+else
+  _system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{project}-#{revision_id}_complete.pkg"
+end
+
+_system "vagrant box add --force '#{project}-#{revision_id}_complete' '#{run_dir_boxes}/#{project}-#{revision_id}_complete.pkg'"
+_system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}_complete\\"")' Vagrantfile}
+_system "vagrant up"
+_system "vagrant ssh -c 'cd /vagrant; rake test'"
