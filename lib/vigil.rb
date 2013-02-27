@@ -1,10 +1,10 @@
-require 'fileutils'
-
 class Vigil
 
   
   def initialize(shell=nil)
     @x = shell || Class.new do
+      require 'fileutils'
+
       def _system cmd
         puts "# #{cmd}"
         system cmd or raise "Failed"
@@ -15,6 +15,19 @@ class Vigil
         system cmd
         return $? == 0
       end
+
+      def mkdir_p *args
+        FileUtils.mkdir_p args
+      end
+
+      def chdir *args
+        Dir.chdir args
+      end
+
+      def exists? *args
+        File.exists? args
+      end
+        
     end.new
   end
 
@@ -31,22 +44,22 @@ class Vigil
     
     raise "Failed" unless File.directory?(project_dir)
     
-    FileUtils.mkdir_p run_dir_revision
-    FileUtils.mkdir_p run_dir_boxes
-    Dir.chdir run_dir_revision
+    @x.mkdir_p run_dir_revision
+    @x.mkdir_p run_dir_boxes
+    @x.chdir run_dir_revision
     
     #TODO use grit for git stuff
     
     @x._system "git clone #{project_dir} ."
     @x._system "git checkout vigil"  #FIXME
     
-    @x._system "ln -s #{File.expand_path('../../iso')}"
+    @x._system "ln -s #{File.expand_path(File.join(run_dir, 'iso'))}"
     
     puts "### Step 1"
     previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}.box"
     current_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id}.box"
-    if File.exists?(current_revision_box_name)
-    elsif !File.exists?(previous_revision_box_name) or
+    if @x.exists?(current_revision_box_name)
+    elsif !@x.exists?(previous_revision_box_name) or
         !@x.__system "git diff --quiet HEAD^ -- definitions" #FIXME
       @x._system "vagrant basebox build --force --nogui '#{project}'"
       @x._system "vagrant basebox validate '#{project}'"
@@ -60,7 +73,7 @@ class Vigil
     puts "### Step 2"
     previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_no_gems.pkg"
     boxname = "#{project}-#{revision_id}"
-    if !File.exists?(previous_revision_box_name) or
+    if !@x.exists?(previous_revision_box_name) or
         !@x.__system "git diff --quiet HEAD^ -- manifests" #FIXME
       @x._system "vagrant box add --force '#{boxname}' '#{run_dir_boxes}/#{boxname}.box'"
       @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}\\"")' Vagrantfile}
@@ -73,7 +86,7 @@ class Vigil
     
     puts "### Step 3"
     previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_complete.pkg"
-    if !File.exists?(previous_revision_box_name) or
+    if !@x.exists?(previous_revision_box_name) or
         !@x.__system "git diff --quiet HEAD^ -- Gemfile*" #FIXME
       @x._system "vagrant box add --force '#{project}-#{revision_id}_no_gems' '#{run_dir_boxes}/#{project}-#{revision_id}_no_gems.pkg'"
       @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}_no_gems\\"")' Vagrantfile}
