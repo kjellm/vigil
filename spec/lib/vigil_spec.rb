@@ -11,7 +11,7 @@ describe Vigil do
     shell.stub(mkdir_p: true)
     shell.stub(chdir: true)
 
-    shell.should_receive('_system').with("git clone /Users/kjellm/projects/amedia/znork/ .").ordered
+    shell.should_receive('_system').with("git clone /foo/bar/znork/ .").ordered
     shell.should_receive('_system').with("git checkout vigil").ordered
     shell.should_receive('_system').with("ln -s #{base}/run/iso").ordered
 
@@ -51,7 +51,7 @@ describe Vigil do
     shell.should_receive('_system').with("vagrant ssh -c 'cd /vagrant; rake test'").ordered
     
 
-    vigil.run('1')
+    vigil.run('/foo/bar/znork/', '1')
   end
 
 end

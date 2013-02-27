@@ -32,17 +32,14 @@ class Vigil
   end
 
 
-  def run revision_id
+  def run project_dir, revision_id
 
-    project_dir = '/Users/kjellm/projects/amedia/znork/'
     project = File.basename(project_dir)
     
     run_dir = File.expand_path 'run'
     run_dir_project = File.join(run_dir, project)
     run_dir_revision = File.join(run_dir_project, revision_id)
     run_dir_boxes = File.join(run_dir_project, 'boxes')
-    
-    raise "Failed" unless File.directory?(project_dir)
     
     @x.mkdir_p run_dir_revision
     @x.mkdir_p run_dir_boxes
