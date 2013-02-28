@@ -52,7 +52,6 @@ class Vigil
     
     @x._system "ln -s #{File.expand_path(File.join(run_dir, 'iso'))}"
     
-    puts "### Step 1"
     previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}.box"
     current_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id}.box"
     if @x.exists?(current_revision_box_name)
@@ -67,10 +66,11 @@ class Vigil
       @x._system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{project}-#{revision_id}.box"
     end
     
-    puts "### Step 2"
     previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_no_gems.pkg"
+    current_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id}_no_gems.pkg"
     boxname = "#{project}-#{revision_id}"
-    if !@x.exists?(previous_revision_box_name) or
+    if @x.exists?(current_revision_box_name)
+    elsif !@x.exists?(previous_revision_box_name) or
         !@x.__system "git diff --quiet HEAD^ -- manifests" #FIXME
       @x._system "vagrant box add --force '#{boxname}' '#{run_dir_boxes}/#{boxname}.box'"
       @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}\\"")' Vagrantfile}
@@ -81,9 +81,10 @@ class Vigil
       @x._system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{boxname}_no_gems.pkg"
     end
     
-    puts "### Step 3"
     previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_complete.pkg"
-    if !@x.exists?(previous_revision_box_name) or
+    current_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id}_complete.pkg"
+    if @x.exists?(current_revision_box_name)
+    elsif !@x.exists?(previous_revision_box_name) or
         !@x.__system "git diff --quiet HEAD^ -- Gemfile*" #FIXME
       @x._system "vagrant box add --force '#{project}-#{revision_id}_no_gems' '#{run_dir_boxes}/#{project}-#{revision_id}_no_gems.pkg'"
       @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}_no_gems\\"")' Vagrantfile}
@@ -96,12 +97,10 @@ class Vigil
       @x._system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{project}-#{revision_id}_complete.pkg"
     end
     
-    puts "### Step 4"
     @x._system "vagrant box add --force '#{project}-#{revision_id}_complete' '#{run_dir_boxes}/#{project}-#{revision_id}_complete.pkg'"
     @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}_complete\\"")' Vagrantfile}
     @x._system "vagrant up"
     
-    puts "### Step 5"
     @x._system "vagrant ssh -c 'cd /vagrant; rake test'"
   end
 end
