@@ -67,7 +67,7 @@ describe Vigil do
       end
     end
 
-    context "and the veewee definitions has changed" do
+    context "and only the veewee definitions has changed" do
       it "builds the VM from scratch" do
         @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1.box").ordered.and_return(false)
         @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0.box").ordered.and_return(true)
@@ -82,7 +82,7 @@ describe Vigil do
       end
     end
 
-    context "and the puppet manifests has changed" do
+    context "and only the puppet manifests has changed" do
       it "uses the previous revisions basebox to build the VM" do
         @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1.box").ordered.and_return(false)
         @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0.box").ordered.and_return(true)
@@ -93,6 +93,27 @@ describe Vigil do
         @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0_no_gems.pkg").ordered.and_return(true)
         @shell.should_receive('__system').with("git diff --quiet HEAD^ -- manifests").ordered.and_return(false)
         no_gems_box_expectations
+        complete_box_expectations
+        start_complete_box_expectations
+        run_tests_expectation
+        @vigil.run('/foo/bar/znork/', '1')
+      end
+    end
+
+    context "and only Gemfile* has changed" do
+      it "uses the previous revisions basebox to build the VM" do
+        @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1.box").ordered.and_return(false)
+        @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0.box").ordered.and_return(true)
+        @shell.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").ordered.and_return(true)
+        @shell.should_receive('_system').with("ln #@base/run/znork/boxes/znork-0.box #@base/run/znork/boxes/znork-1.box").ordered
+
+        @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1_no_gems.pkg").ordered.and_return(false)
+        @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0_no_gems.pkg").ordered.and_return(true)
+        @shell.should_receive('__system').with("git diff --quiet HEAD^ -- manifests").ordered.and_return(true)
+        @shell.should_receive('_system').with("ln #@base/run/znork/boxes/znork-0_no_gems.pkg #@base/run/znork/boxes/znork-1_no_gems.pkg").ordered
+
+        @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0_complete.pkg").ordered.and_return(true)
+        @shell.should_receive('__system').with("git diff --quiet HEAD^ -- Gemfile*").ordered.and_return(false)
         complete_box_expectations
         start_complete_box_expectations
         run_tests_expectation
