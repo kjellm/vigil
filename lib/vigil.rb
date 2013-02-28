@@ -83,6 +83,12 @@ class Vigil
     end  
 
     def _build_vm
+      _build_basebox
+      _build_no_gems_box
+      _build_complete_box
+    end
+
+    def _build_basebox
       previous_revision_box_name = File.join @run_dir_boxes, "#@project-#{@revision_id.to_i - 1}.box"
       current_revision_box_name = File.join @run_dir_boxes, "#@project-#@revision_id.box"
       if @x.exists?(current_revision_box_name)
@@ -90,10 +96,16 @@ class Vigil
       elsif @x.exists?(previous_revision_box_name) and _no_changes_relative_to_previous_revision_in?('definitions')
         @x._system "ln #{previous_revision_box_name} #{current_revision_box_name}"
       else
-        _build_basebox
+        _vagrant "basebox build --force --nogui '#{@project}'"
+        _vagrant "basebox validate '#{@project}'"
+        _vagrant "basebox export '#{@project}'"
+        @x._system "mv #{@project}.box #{@run_dir_boxes}/#{@project}-#{@revision_id}.box"
+        _vagrant "basebox destroy #{@project}" #FIXME put in ensure block
         @rebuild = true
       end
-      
+    end
+
+    def _build_no_gems_box
       previous_revision_box_name = File.join @run_dir_boxes, "#{@project}-#{@revision_id.to_i - 1}_no_gems.pkg"
       current_revision_box_name = File.join @run_dir_boxes, "#{@project}-#{@revision_id}_no_gems.pkg"
       boxname = "#{@project}-#{@revision_id}"
@@ -110,7 +122,9 @@ class Vigil
       else
         @x._system "ln #{previous_revision_box_name} #{@run_dir_boxes}/#{boxname}_no_gems.pkg"
       end
-      
+    end
+
+    def _build_complete_box
       previous_revision_box_name = File.join @run_dir_boxes, "#{@project}-#{@revision_id.to_i - 1}_complete.pkg"
       if @rebuild or !@x.exists?(previous_revision_box_name) or
           !_no_changes_relative_to_previous_revision_in?('Gemfile*')
@@ -124,14 +138,6 @@ class Vigil
       else
         @x._system "ln #{previous_revision_box_name} #{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
       end
-    end
-
-    def _build_basebox
-      _vagrant "basebox build --force --nogui '#{@project}'"
-      _vagrant "basebox validate '#{@project}'"
-      _vagrant "basebox export '#{@project}'"
-      @x._system "mv #{@project}.box #{@run_dir_boxes}/#{@project}-#{@revision_id}.box"
-      _vagrant "basebox destroy #{@project}" #FIXME put in ensure block
     end
 
     def _start_vm
