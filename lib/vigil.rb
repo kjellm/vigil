@@ -53,9 +53,13 @@ class Vigil
       @rebuild = false
     end
 
-    def run
+    def _create_required_directories
       @x.mkdir_p @run_dir_revision
       @x.mkdir_p @run_dir_boxes
+    end
+
+    def run
+      _create_required_directories
       @x.chdir @run_dir_revision
       
       #TODO use grit for git stuff
