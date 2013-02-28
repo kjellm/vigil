@@ -55,30 +55,33 @@ class Vigil
 
     def run
       _create_required_directories
-      @x.chdir @run_dir_revision
-      
-      #TODO use grit for git stuff
-      
-      @x._system "git clone #@project_dir ."
-      @x._system "git checkout vigil"  #FIXME
-      
-      @x._system "ln -s #{File.expand_path(File.join(@run_dir, 'iso'))}"
-  
-      unless @x.exists?(File.join @run_dir_boxes, "#@project-#{@revision_id}_complete.pkg")
+      _git_clone
+      _set_up_iso_cache
+      unless @x.exists?(File.join(@run_dir_boxes, "#@project-#{@revision_id}_complete.pkg"))
         _build_vm
       end
-    
-      @x._system "vagrant box add --force '#{@project}-#{@revision_id}_complete' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg'"
-      @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{@project}-#{@revision_id}_complete\\"")' Vagrantfile}
-      @x._system "vagrant up"
-      
-      @x._system "vagrant ssh -c 'cd /vagrant; rake test'"
+      _start_vm
+      _run_tests
     end
 
     def _create_required_directories
       @x.mkdir_p @run_dir_revision
       @x.mkdir_p @run_dir_boxes
     end
+    
+    def _git_clone
+      @x.chdir @run_dir_revision
+      
+      #TODO use grit for git stuff
+      
+      @x._system "git clone #@project_dir ."
+      @x._system "git checkout vigil"  #FIXME
+    end
+
+
+    def _set_up_iso_cache
+      @x._system "ln -s #{File.expand_path(File.join(@run_dir, 'iso'))}"
+    end  
 
     def _build_vm
       previous_revision_box_name = File.join @run_dir_boxes, "#@project-#{@revision_id.to_i - 1}.box"
@@ -129,6 +132,16 @@ class Vigil
       @x._system "vagrant basebox export '#{@project}'"
       @x._system "mv #{@project}.box #{@run_dir_boxes}/#{@project}-#{@revision_id}.box"
       @x._system "vagrant basebox destroy #{@project}" #FIXME put in ensure block
+    end
+
+    def _start_vm
+      @x._system "vagrant box add --force '#{@project}-#{@revision_id}_complete' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg'"
+      @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{@project}-#{@revision_id}_complete\\"")' Vagrantfile}
+      @x._system "vagrant up"
+    end
+
+    def _run_tests
+      @x._system "vagrant ssh -c 'cd /vagrant; rake test'"
     end
 
     def _no_changes_relative_to_previous_revision_in?(files)
