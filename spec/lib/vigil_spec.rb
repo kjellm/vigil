@@ -15,9 +15,20 @@ describe Vigil do
     @shell.should_receive('_system').with("ln -s #@base/run/iso").ordered
   end
 
+  context "The VM has already been built" do
+    it "uses the already built VM" do
+      @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1_complete.pkg").ordered.and_return(true)
+      start_complete_box_expectations
+      run_tests_expectation
+      @vigil.run('/foo/bar/znork/', '1')
+    end
+  end
+
   context "When no VM has been built before" do
 
     it "builds a VM from scratch" do
+      @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1_complete.pkg").ordered.and_return(false)
+
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1.box").ordered.and_return(false)
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0.box").ordered.and_return(false)
       basebox_expectations
@@ -33,6 +44,8 @@ describe Vigil do
 
   context "When a VM has been previously been completely built for this revision" do
     it "uses the previously built VM" do
+      @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1_complete.pkg").ordered.and_return(false)
+
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1.box").ordered.and_return(true)
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1_no_gems.pkg").ordered.and_return(true)
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1_complete.pkg").ordered.and_return(true)
@@ -44,6 +57,8 @@ describe Vigil do
 
   context "When a VM has been completely built for the previous revision" do
     it "reuses the VM when none of the VM configuration files has changed" do
+      @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1_complete.pkg").ordered.and_return(false)
+
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1.box").ordered.and_return(false)
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0.box").ordered.and_return(true)
       @shell.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").ordered.and_return(true)
@@ -65,6 +80,8 @@ describe Vigil do
     end
 
     it "builds the VM from scratch when the veewee definitions has changed" do
+      @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1_complete.pkg").ordered.and_return(false)
+
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1.box").ordered.and_return(false)
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0.box").ordered.and_return(true)
       @shell.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").ordered.and_return(false)
