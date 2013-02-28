@@ -87,9 +87,7 @@ class Vigil
       end
       
       previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_complete.pkg"
-      current_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id}_complete.pkg"
-      if @x.exists?(current_revision_box_name)
-      elsif rebuild or !@x.exists?(previous_revision_box_name) or
+      if rebuild or !@x.exists?(previous_revision_box_name) or
           !@x.__system "git diff --quiet HEAD^ -- Gemfile*" #FIXME
         @x._system "vagrant box add --force '#{project}-#{revision_id}_no_gems' '#{run_dir_boxes}/#{project}-#{revision_id}_no_gems.pkg'"
         @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}_no_gems\\"")' Vagrantfile}
