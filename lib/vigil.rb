@@ -51,6 +51,8 @@ class Vigil
     @x._system "git checkout vigil"  #FIXME
     
     @x._system "ln -s #{File.expand_path(File.join(run_dir, 'iso'))}"
+
+    rebuild = false
     
     previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}.box"
     current_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id}.box"
@@ -62,6 +64,7 @@ class Vigil
       @x._system "vagrant basebox export '#{project}'"
       @x._system "mv #{project}.box #{run_dir_boxes}/#{project}-#{revision_id}.box"
       @x._system "vagrant basebox destroy #{project}" #FIXME put in ensure block
+      rebuild = true
     else
       @x._system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{project}-#{revision_id}.box"
     end
@@ -70,13 +73,14 @@ class Vigil
     current_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id}_no_gems.pkg"
     boxname = "#{project}-#{revision_id}"
     if @x.exists?(current_revision_box_name)
-    elsif !@x.exists?(previous_revision_box_name) or
+    elsif rebuild or !@x.exists?(previous_revision_box_name) or
         !@x.__system "git diff --quiet HEAD^ -- manifests" #FIXME
       @x._system "vagrant box add --force '#{boxname}' '#{run_dir_boxes}/#{boxname}.box'"
       @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}\\"")' Vagrantfile}
       @x._system "vagrant up"
       @x._system "vagrant package --output #{run_dir_boxes}/#{boxname}_no_gems.pkg"
       @x._system "vagrant box remove #{boxname}"# remove #FIXME put in ensure block
+      rebuild = true
     else
       @x._system "ln #{previous_revision_box_name} #{run_dir_boxes}/#{boxname}_no_gems.pkg"
     end
@@ -84,7 +88,7 @@ class Vigil
     previous_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id.to_i - 1}_complete.pkg"
     current_revision_box_name = File.join run_dir_boxes, "#{project}-#{revision_id}_complete.pkg"
     if @x.exists?(current_revision_box_name)
-    elsif !@x.exists?(previous_revision_box_name) or
+    elsif rebuild or !@x.exists?(previous_revision_box_name) or
         !@x.__system "git diff --quiet HEAD^ -- Gemfile*" #FIXME
       @x._system "vagrant box add --force '#{project}-#{revision_id}_no_gems' '#{run_dir_boxes}/#{project}-#{revision_id}_no_gems.pkg'"
       @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{project}-#{revision_id}_no_gems\\"")' Vagrantfile}
