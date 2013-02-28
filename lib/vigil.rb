@@ -78,7 +78,6 @@ class Vigil
       @x._system "git checkout vigil"  #FIXME
     end
 
-
     def _set_up_iso_cache
       @x._system "ln -s #{File.expand_path(File.join(@run_dir, 'iso'))}"
     end  
@@ -99,13 +98,14 @@ class Vigil
       current_revision_box_name = File.join @run_dir_boxes, "#{@project}-#{@revision_id}_no_gems.pkg"
       boxname = "#{@project}-#{@revision_id}"
       if @x.exists?(current_revision_box_name)
+        # noop
       elsif @rebuild or !@x.exists?(previous_revision_box_name) or
-          !@x.__system "git diff --quiet HEAD^ -- manifests" #FIXME
-        @x._system "vagrant box add --force '#{boxname}' '#{@run_dir_boxes}/#{boxname}.box'"
+          !_no_changes_relative_to_previous_revision_in?('manifests')
+        _vagrant "box add --force '#{boxname}' '#{@run_dir_boxes}/#{boxname}.box'"
         @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{@project}-#{@revision_id}\\"")' Vagrantfile}
-        @x._system "vagrant up"
-        @x._system "vagrant package --output #{@run_dir_boxes}/#{boxname}_no_gems.pkg"
-        @x._system "vagrant box remove #{boxname}"# remove #FIXME put in ensure block
+        _vagrant "up"
+        _vagrant "package --output #{@run_dir_boxes}/#{boxname}_no_gems.pkg"
+        _vagrant "box remove #{boxname}"# remove #FIXME put in ensure block
         @rebuild = true
       else
         @x._system "ln #{previous_revision_box_name} #{@run_dir_boxes}/#{boxname}_no_gems.pkg"
@@ -113,39 +113,43 @@ class Vigil
       
       previous_revision_box_name = File.join @run_dir_boxes, "#{@project}-#{@revision_id.to_i - 1}_complete.pkg"
       if @rebuild or !@x.exists?(previous_revision_box_name) or
-          !@x.__system "git diff --quiet HEAD^ -- Gemfile*" #FIXME
-        @x._system "vagrant box add --force '#{@project}-#{@revision_id}_no_gems' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_no_gems.pkg'"
+          !_no_changes_relative_to_previous_revision_in?('Gemfile*')
+        _vagrant "box add --force '#{@project}-#{@revision_id}_no_gems' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_no_gems.pkg'"
         @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{@project}-#{@revision_id}_no_gems\\"")' Vagrantfile}
-        @x._system "vagrant up"
-        @x._system "vagrant ssh -c 'sudo gem install bundler'"
-        @x._system "vagrant ssh -c 'cd /vagrant/; bundle install'"
-        @x._system "vagrant package --output #{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
-        @x._system "vagrant box remove '#{@project}-#{@revision_id}_no_gems'"# remove #FIXME put in ensure block
+        _vagrant "up"
+        _vagrant "ssh -c 'sudo gem install bundler'"
+        _vagrant "ssh -c 'cd /vagrant/; bundle install'"
+        _vagrant "package --output #{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
+        _vagrant "box remove '#{@project}-#{@revision_id}_no_gems'"# remove #FIXME put in ensure block
       else
         @x._system "ln #{previous_revision_box_name} #{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
       end
     end
 
     def _build_basebox
-      @x._system "vagrant basebox build --force --nogui '#{@project}'"
-      @x._system "vagrant basebox validate '#{@project}'"
-      @x._system "vagrant basebox export '#{@project}'"
+      _vagrant "basebox build --force --nogui '#{@project}'"
+      _vagrant "basebox validate '#{@project}'"
+      _vagrant "basebox export '#{@project}'"
       @x._system "mv #{@project}.box #{@run_dir_boxes}/#{@project}-#{@revision_id}.box"
-      @x._system "vagrant basebox destroy #{@project}" #FIXME put in ensure block
+      _vagrant "basebox destroy #{@project}" #FIXME put in ensure block
     end
 
     def _start_vm
-      @x._system "vagrant box add --force '#{@project}-#{@revision_id}_complete' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg'"
+      _vagrant "box add --force '#{@project}-#{@revision_id}_complete' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg'"
       @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{@project}-#{@revision_id}_complete\\"")' Vagrantfile}
-      @x._system "vagrant up"
+      _vagrant "up"
     end
 
     def _run_tests
-      @x._system "vagrant ssh -c 'cd /vagrant; rake test'"
+      _vagrant "ssh -c 'cd /vagrant; rake test'"
     end
 
     def _no_changes_relative_to_previous_revision_in?(files)
       @x.__system "git diff --quiet HEAD^ -- #{files}" #FIXME
+    end
+
+    def _vagrant(cmd)
+      @x._system "vagrant #{cmd}"
     end
 
   end
