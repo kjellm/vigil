@@ -114,7 +114,7 @@ class Vigil
       elsif @rebuild or !@x.exists?(previous_revision_box_name) or
           !_no_changes_relative_to_previous_revision_in?('manifests')
         _vagrant "box add --force '#{boxname}' '#{@run_dir_boxes}/#{boxname}.box'"
-        _set_box_in_vagrantfile "#{@project}-#{@revision_id}"
+        _vagrant_use "#{@project}-#{@revision_id}"
         _vagrant "up"
         _vagrant "package --output #{@run_dir_boxes}/#{boxname}_no_gems.pkg"
         _vagrant "box remove #{boxname}"
@@ -129,7 +129,7 @@ class Vigil
       if @rebuild or !@x.exists?(previous_revision_box_name) or
           !_no_changes_relative_to_previous_revision_in?('Gemfile*')
         _vagrant "box add --force '#{@project}-#{@revision_id}_no_gems' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_no_gems.pkg'"
-        _set_box_in_vagrantfile "#{@project}-#{@revision_id}_no_gems"
+        _vagrant_use "#{@project}-#{@revision_id}_no_gems"
         _vagrant "up"
         _vagrant "ssh -c 'sudo gem install bundler'"
         _vagrant "ssh -c 'cd /vagrant/; bundle install'"
@@ -142,7 +142,7 @@ class Vigil
 
     def _start_vm
       _vagrant "box add --force '#{@project}-#{@revision_id}_complete' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg'"
-      _set_box_in_vagrantfile "#{@project}-#{@revision_id}_complete"
+      _vagrant_use "#{@project}-#{@revision_id}_complete"
       _vagrant "up"
     end
 
@@ -158,7 +158,7 @@ class Vigil
       @x._system "vagrant #{cmd}"
     end
 
-    def _set_box_in_vagrantfile(box)
+    def _vagrant_use(box)
       @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{box}\\"")' Vagrantfile}
     end
 
