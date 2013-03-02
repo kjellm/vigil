@@ -87,7 +87,7 @@ class Vigil
     def _build_vm
       _setup_basebox
       _setup_no_gems_box
-      _build_complete_box
+      _setup_complete_box
       @rebuild = false
     end
 
@@ -146,10 +146,17 @@ class Vigil
       _vagrant "box remove #{boxname}"
     end
 
-    def _build_complete_box
+    def _setup_complete_box
       previous_box = _previous_revision_box_base_name + "_complete.pkg"
       if @rebuild or !@x.exists?(previous_box) or
           !_no_changes_relative_to_previous_revision_in?('Gemfile*')
+        _build_complete_box
+      else
+        @x.ln previous_box, "#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
+      end
+    end
+
+    def _build_complete_box
         _vagrant "box add --force '#{@project}-#{@revision_id}_no_gems' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_no_gems.pkg'"
         _vagrant_use "#{@project}-#{@revision_id}_no_gems"
         _vagrant "up"
@@ -157,9 +164,6 @@ class Vigil
         _vagrant "ssh -c 'cd /vagrant/; bundle install'"
         _vagrant "package --output #{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
         _vagrant "box remove '#{@project}-#{@revision_id}_no_gems'"
-      else
-        @x.ln previous_box, "#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
-      end
     end
 
     def _start_vm

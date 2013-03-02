@@ -36,7 +36,6 @@ describe Vigil do
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-0.box").and_return(false)
       @shell.should_receive('exists?').with("#@base/run/znork/boxes/znork-1_no_gems.pkg").and_return(false)
 
-
       basebox_expectations
       no_gems_box_expectations
       complete_box_expectations
