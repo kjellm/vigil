@@ -17,15 +17,15 @@ class Vigil
       end
 
       def mkdir_p *args
-        FileUtils.mkdir_p args
+        FileUtils.mkdir_p *args
       end
 
       def chdir *args
-        Dir.chdir args
+        Dir.chdir *args
       end
 
       def exists? *args
-        File.exists? args
+        File.exists? *args
       end
         
       def ln *args
