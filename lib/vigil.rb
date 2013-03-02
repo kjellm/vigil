@@ -59,9 +59,10 @@ class Vigil
 
     def run
       _create_required_directories
+      @x.chdir @run_dir_revision
       _git_clone
       _set_up_iso_cache
-      unless @x.exists?(File.join(@run_dir_boxes, "#@project-#{@revision_id}_complete.pkg"))
+      unless @x.exists?(_current_revision_box_base_name + "_complete.pkg")
         _build_vm
       end
       _start_vm
@@ -74,22 +75,20 @@ class Vigil
     end
     
     def _git_clone
-      @x.chdir @run_dir_revision
-      
-      #TODO use grit for git stuff
-      
+      return if @x.exists? File.join(@run_dir_revision, '.git')
       @x._system "git clone #@project_dir ."
       @x._system "git checkout vigil"  #FIXME
     end
 
     def _set_up_iso_cache
-      @x._system "ln -s #{File.expand_path(File.join(@run_dir, 'iso'))}"
+      @x._system "ln -sf #{File.join(@run_dir, 'iso')}"
     end  
 
     def _build_vm
-      _build_basebox
+      _setup_basebox
       _build_no_gems_box
       _build_complete_box
+      @rebuild = false
     end
 
     def _previous_revision_box_base_name
@@ -105,30 +104,32 @@ class Vigil
     end
 
 
-    def _build_basebox
+    def _setup_basebox
       current_box = _current_revision_box_base_name + ".box"
       previous_box = _previous_revision_box_base_name + ".box"
-      if @x.exists? current_box
-        # noop
-      elsif @x.exists?(previous_box) and _no_changes_relative_to_previous_revision_in?('definitions')
+      return if @x.exists? current_box
+      if @x.exists?(previous_box) and _no_changes_relative_to_previous_revision_in?('definitions')
         @x.ln previous_box, current_box
       else
-        _vagrant "basebox build --force --nogui '#{@project}'"
-        _vagrant "basebox validate '#{@project}'"
-        _vagrant "basebox export '#{@project}'"
-        @x._system "mv #{@project}.box #{@run_dir_boxes}/#{@project}-#{@revision_id}.box"
-        _vagrant "basebox destroy #{@project}"
+        _build_basebox(current_box)
         @rebuild = true
       end
+    end
+
+    def _build_basebox(current_box)
+      _vagrant "basebox build --force --nogui '#{@project}'"
+      _vagrant "basebox validate '#{@project}'"
+      _vagrant "basebox export '#{@project}'"
+      @x._system "mv #{@project}.box #{current_box}"
+      _vagrant "basebox destroy #{@project}"
     end
 
     def _build_no_gems_box
       current_box = _current_revision_box_base_name + "_no_gems.pkg"
       previous_box = _previous_revision_box_base_name + "_no_gems.pkg"
       boxname = "#{@project}-#{@revision_id}"
-      if @x.exists?(current_box)
-        # noop
-      elsif @rebuild or !@x.exists?(previous_box) or
+      return if @x.exists?(current_box)
+      if @rebuild or !@x.exists?(previous_box) or
           !_no_changes_relative_to_previous_revision_in?('manifests')
         _vagrant "box add --force '#{boxname}' '#{@run_dir_boxes}/#{boxname}.box'"
         _vagrant_use "#{@project}-#{@revision_id}"

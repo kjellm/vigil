@@ -10,9 +10,10 @@ describe Vigil do
   
     @shell.stub(mkdir_p: true)
     @shell.should_receive('chdir').with("#@base/run/znork/1").ordered
+    @shell.should_receive('exists?').with("#@base/run/znork/1/.git").ordered
     @shell.should_receive('_system').with("git clone /foo/bar/znork/ .").ordered
     @shell.should_receive('_system').with("git checkout vigil").ordered
-    @shell.should_receive('_system').with("ln -s #@base/run/iso").ordered
+    @shell.should_receive('_system').with("ln -sf #@base/run/iso").ordered
   end
 
   after :each do
