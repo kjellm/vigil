@@ -28,6 +28,10 @@ class Vigil
         File.exists? args
       end
         
+      def ln *args
+        FileUtils.ln *args
+      end
+
     end.new
   end
 
@@ -94,7 +98,7 @@ class Vigil
       if @x.exists?(current_revision_box_name)
         # noop
       elsif @x.exists?(previous_revision_box_name) and _no_changes_relative_to_previous_revision_in?('definitions')
-        @x._system "ln #{previous_revision_box_name} #{current_revision_box_name}"
+        @x.ln previous_revision_box_name, current_revision_box_name
       else
         _vagrant "basebox build --force --nogui '#{@project}'"
         _vagrant "basebox validate '#{@project}'"
@@ -120,7 +124,7 @@ class Vigil
         _vagrant "box remove #{boxname}"
         @rebuild = true
       else
-        @x._system "ln #{previous_revision_box_name} #{@run_dir_boxes}/#{boxname}_no_gems.pkg"
+        @x.ln previous_revision_box_name, "#{@run_dir_boxes}/#{boxname}_no_gems.pkg"
       end
     end
 
@@ -136,7 +140,7 @@ class Vigil
         _vagrant "package --output #{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
         _vagrant "box remove '#{@project}-#{@revision_id}_no_gems'"
       else
-        @x._system "ln #{previous_revision_box_name} #{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
+        @x.ln previous_revision_box_name, "#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
       end
     end
 
