@@ -86,7 +86,7 @@ class Vigil
 
     def _build_vm
       _setup_basebox
-      _build_no_gems_box
+      _setup_no_gems_box
       _build_complete_box
       @rebuild = false
     end
@@ -124,22 +124,26 @@ class Vigil
       _vagrant "basebox destroy #{@project}"
     end
 
-    def _build_no_gems_box
+    def _setup_no_gems_box
       current_box = _current_revision_box_base_name + "_no_gems.pkg"
       previous_box = _previous_revision_box_base_name + "_no_gems.pkg"
-      boxname = "#{@project}-#{@revision_id}"
       return if @x.exists?(current_box)
       if @rebuild or !@x.exists?(previous_box) or
           !_no_changes_relative_to_previous_revision_in?('manifests')
-        _vagrant "box add --force '#{boxname}' '#{@run_dir_boxes}/#{boxname}.box'"
-        _vagrant_use "#{@project}-#{@revision_id}"
-        _vagrant "up"
-        _vagrant "package --output #{@run_dir_boxes}/#{boxname}_no_gems.pkg"
-        _vagrant "box remove #{boxname}"
+        _build_no_gems_box(current_box)
         @rebuild = true
       else
-        @x.ln previous_box, "#{@run_dir_boxes}/#{boxname}_no_gems.pkg"
+        @x.ln previous_box, current_box
       end
+    end
+
+    def _build_no_gems_box(current_box)
+      boxname = "#{@project}-#{@revision_id}"
+      _vagrant "box add --force '#{boxname}' '#{@run_dir_boxes}/#{boxname}.box'"
+      _vagrant_use "#{@project}-#{@revision_id}"
+      _vagrant "up"
+      _vagrant "package --output #{current_box}"
+      _vagrant "box remove #{boxname}"
     end
 
     def _build_complete_box
