@@ -40,6 +40,46 @@ class Vigil
     VMBuilder.new(@x, project_dir, revision_id).run
   end
 
+
+  class Revision
+
+    def initialize(id, project, run_dir_boxes)
+      @id = id
+      @project = project
+      @run_dir_boxes = run_dir_boxes
+    end
+
+    def base_box_name
+      "#@project-#@id"
+    end
+
+    def base_box_path
+      _box_path(base_box_name + '.box')
+    end
+
+    def no_gems_box_name
+      base_box_name + '_no_gems'
+    end
+
+    def no_gems_box_path
+      _box_path(no_gems_box_name + '.pkg')
+    end
+
+    def complete_box_name
+      base_box_name + '_complete'
+    end
+
+    def complete_box_path
+      _box_path(complete_box_name + '.pkg')
+    end
+
+    def _box_path(box)
+      File.join(@run_dir_boxes, box)
+    end
+    
+  end
+
+
   class VMBuilder
 
     def initialize(shell, project_dir, revision_id)
@@ -54,6 +94,9 @@ class Vigil
       @run_dir_revision = File.join(@run_dir_project, @revision_id)
       @run_dir_boxes = File.join(@run_dir_project, 'boxes')
 
+      @previous_revision = Revision.new(@revision_id.to_i-1, @project, @run_dir_boxes)
+      @revision = Revision.new(@revision_id, @project, @run_dir_boxes)
+
       @rebuild = false
     end
 
@@ -62,7 +105,7 @@ class Vigil
       @x.chdir @run_dir_revision
       _git_clone
       _set_up_iso_cache
-      unless @x.exists?(_current_revision_box_base_name + "_complete.pkg")
+      unless @x.exists?(@revision.complete_box_path)
         _build_vm
       end
       _start_vm
@@ -91,84 +134,65 @@ class Vigil
       @rebuild = false
     end
 
-    def _previous_revision_box_base_name
-      _box_base_name_for(@revision_id.to_i - 1)
-    end
-
-    def _current_revision_box_base_name
-      _box_base_name_for @revision_id
-    end
-
-    def _box_base_name_for(revision)
-      File.join @run_dir_boxes, "#@project-#{revision}"
-    end
-
-
     def _setup_basebox
-      current_box = _current_revision_box_base_name + ".box"
-      previous_box = _previous_revision_box_base_name + ".box"
-      return if @x.exists? current_box
-      if @x.exists?(previous_box) and _no_changes_relative_to_previous_revision_in?('definitions')
-        @x.ln previous_box, current_box
+      return if @x.exists? @revision.base_box_path
+      if @x.exists?(@previous_revision.base_box_path) and _no_changes_relative_to_previous_revision_in?('definitions')
+        @x.ln @previous_revision.base_box_path, @revision.base_box_path
       else
-        _build_basebox(current_box)
+        _build_basebox
         @rebuild = true
       end
     end
 
-    def _build_basebox(current_box)
+    def _build_basebox
       _vagrant "basebox build --force --nogui '#{@project}'"
       _vagrant "basebox validate '#{@project}'"
       _vagrant "basebox export '#{@project}'"
-      @x._system "mv #{@project}.box #{current_box}"
+      @x._system "mv #{@project}.box #{@revision.base_box_path}"
       _vagrant "basebox destroy #{@project}"
     end
 
     def _setup_no_gems_box
-      current_box = _current_revision_box_base_name + "_no_gems.pkg"
-      previous_box = _previous_revision_box_base_name + "_no_gems.pkg"
-      return if @x.exists?(current_box)
-      if @rebuild or !@x.exists?(previous_box) or
+      return if @x.exists?(@revision.no_gems_box_path)
+      if @rebuild or !@x.exists?(@previous_revision.no_gems_box_path) or
           !_no_changes_relative_to_previous_revision_in?('manifests')
-        _build_no_gems_box(current_box)
+        _build_no_gems_box
         @rebuild = true
       else
-        @x.ln previous_box, current_box
+        @x.ln @previous_revision.no_gems_box_path, @revision.no_gems_box_path
       end
     end
 
-    def _build_no_gems_box(current_box)
-      boxname = "#{@project}-#{@revision_id}"
-      _vagrant "box add --force '#{boxname}' '#{@run_dir_boxes}/#{boxname}.box'"
-      _vagrant_use "#{@project}-#{@revision_id}"
+    def _build_no_gems_box
+      _vagrant "box add --force '#{@revision.base_box_name}' '#{@revision.base_box_path}'"
+      _vagrant_use @revision.base_box_name
       _vagrant "up"
-      _vagrant "package --output #{current_box}"
-      _vagrant "box remove #{boxname}"
+      _vagrant "package --output #{@revision.no_gems_box_path}"
+      _vagrant "box remove #{@revision.base_box_name}"
     end
 
     def _setup_complete_box
-      previous_box = _previous_revision_box_base_name + "_complete.pkg"
-      if @rebuild or !@x.exists?(previous_box) or
+      if @rebuild or !@x.exists?(@previous_revision.complete_box_path) or
           !_no_changes_relative_to_previous_revision_in?('Gemfile*')
         _build_complete_box
       else
-        @x.ln previous_box, "#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
+        @x.ln @previous_revision.complete_box_path, @revision.complete_box_path
       end
     end
 
     def _build_complete_box
-        _vagrant "box add --force '#{@project}-#{@revision_id}_no_gems' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_no_gems.pkg'"
-        _vagrant_use "#{@project}-#{@revision_id}_no_gems"
-        _vagrant "up"
-        _vagrant "ssh -c 'sudo gem install bundler'"
-        _vagrant "ssh -c 'cd /vagrant/; bundle install'"
-        _vagrant "package --output #{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
-        _vagrant "box remove '#{@project}-#{@revision_id}_no_gems'"
+      _vagrant "box add --force '#{@revision.no_gems_box_name}' '#{@revision.no_gems_box_path}'"
+      _vagrant_use @revision.no_gems_box_name
+      _vagrant "up"
+      _vagrant "ssh -c 'sudo gem install bundler'"
+      _vagrant "ssh -c 'cd /vagrant/; bundle install'"
+      _vagrant "package --output #{@revision.complete_box_path}"
+      _vagrant "box remove '#{@revision.no_gems_box_name}'"
     end
 
     def _start_vm
-      _vagrant "box add --force '#{@project}-#{@revision_id}_complete' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg'"
-      _vagrant_use "#{@project}-#{@revision_id}_complete"
+      _vagrant "box add --force '#{@revision.complete_box_name}' '#{@revision.complete_box_path}'"
+      _vagrant_use @revision.complete_box_name
       _vagrant "up"
     end
 
