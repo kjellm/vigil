@@ -92,13 +92,26 @@ class Vigil
       _build_complete_box
     end
 
+    def _previous_revision_box_base_name
+      _box_base_name_for(@revision_id.to_i - 1)
+    end
+
+    def _current_revision_box_base_name
+      _box_base_name_for @revision_id
+    end
+
+    def _box_base_name_for(revision)
+      File.join @run_dir_boxes, "#@project-#{revision}"
+    end
+
+
     def _build_basebox
-      previous_revision_box_name = File.join @run_dir_boxes, "#@project-#{@revision_id.to_i - 1}.box"
-      current_revision_box_name = File.join @run_dir_boxes, "#@project-#@revision_id.box"
-      if @x.exists?(current_revision_box_name)
+      current_box = _current_revision_box_base_name + ".box"
+      previous_box = _previous_revision_box_base_name + ".box"
+      if @x.exists? current_box
         # noop
-      elsif @x.exists?(previous_revision_box_name) and _no_changes_relative_to_previous_revision_in?('definitions')
-        @x.ln previous_revision_box_name, current_revision_box_name
+      elsif @x.exists?(previous_box) and _no_changes_relative_to_previous_revision_in?('definitions')
+        @x.ln previous_box, current_box
       else
         _vagrant "basebox build --force --nogui '#{@project}'"
         _vagrant "basebox validate '#{@project}'"
@@ -110,12 +123,12 @@ class Vigil
     end
 
     def _build_no_gems_box
-      previous_revision_box_name = File.join @run_dir_boxes, "#{@project}-#{@revision_id.to_i - 1}_no_gems.pkg"
-      current_revision_box_name = File.join @run_dir_boxes, "#{@project}-#{@revision_id}_no_gems.pkg"
+      current_box = _current_revision_box_base_name + "_no_gems.pkg"
+      previous_box = _previous_revision_box_base_name + "_no_gems.pkg"
       boxname = "#{@project}-#{@revision_id}"
-      if @x.exists?(current_revision_box_name)
+      if @x.exists?(current_box)
         # noop
-      elsif @rebuild or !@x.exists?(previous_revision_box_name) or
+      elsif @rebuild or !@x.exists?(previous_box) or
           !_no_changes_relative_to_previous_revision_in?('manifests')
         _vagrant "box add --force '#{boxname}' '#{@run_dir_boxes}/#{boxname}.box'"
         _vagrant_use "#{@project}-#{@revision_id}"
@@ -124,13 +137,13 @@ class Vigil
         _vagrant "box remove #{boxname}"
         @rebuild = true
       else
-        @x.ln previous_revision_box_name, "#{@run_dir_boxes}/#{boxname}_no_gems.pkg"
+        @x.ln previous_box, "#{@run_dir_boxes}/#{boxname}_no_gems.pkg"
       end
     end
 
     def _build_complete_box
-      previous_revision_box_name = File.join @run_dir_boxes, "#{@project}-#{@revision_id.to_i - 1}_complete.pkg"
-      if @rebuild or !@x.exists?(previous_revision_box_name) or
+      previous_box = _previous_revision_box_base_name + "_complete.pkg"
+      if @rebuild or !@x.exists?(previous_box) or
           !_no_changes_relative_to_previous_revision_in?('Gemfile*')
         _vagrant "box add --force '#{@project}-#{@revision_id}_no_gems' '#{@run_dir_boxes}/#{@project}-#{@revision_id}_no_gems.pkg'"
         _vagrant_use "#{@project}-#{@revision_id}_no_gems"
@@ -140,7 +153,7 @@ class Vigil
         _vagrant "package --output #{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
         _vagrant "box remove '#{@project}-#{@revision_id}_no_gems'"
       else
-        @x.ln previous_revision_box_name, "#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
+        @x.ln previous_box, "#{@run_dir_boxes}/#{@project}-#{@revision_id}_complete.pkg"
       end
     end
 
