@@ -137,7 +137,7 @@ class Vigil
     def _setup_basebox
       return if @x.exists? @revision.base_box_path
       if @x.exists?(@previous_revision.base_box_path) and _no_changes_relative_to_previous_revision_in?('definitions')
-        @x.ln @previous_revision.base_box_path, @revision.base_box_path
+        _use_old_box(:base_box_path)
       else
         _build_basebox
         @rebuild = true
@@ -159,7 +159,7 @@ class Vigil
         _build_no_gems_box
         @rebuild = true
       else
-        @x.ln @previous_revision.no_gems_box_path, @revision.no_gems_box_path
+        _use_old_box :no_gems_box_path
       end
     end
 
@@ -176,7 +176,7 @@ class Vigil
           !_no_changes_relative_to_previous_revision_in?('Gemfile*')
         _build_complete_box
       else
-        @x.ln @previous_revision.complete_box_path, @revision.complete_box_path
+        _use_old_box :complete_box_path
       end
     end
 
@@ -188,6 +188,10 @@ class Vigil
       _vagrant "ssh -c 'cd /vagrant/; bundle install'"
       _vagrant "package --output #{@revision.complete_box_path}"
       _vagrant "box remove '#{@revision.no_gems_box_name}'"
+    end
+
+    def _use_old_box(box)
+      @x.ln @previous_revision.send(box), @revision.send(box)
     end
 
     def _start_vm
