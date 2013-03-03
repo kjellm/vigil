@@ -1,44 +1,15 @@
+require 'vigil/os'
 require 'vigil/revision'
 require 'vigil/vagrant'
 
 class Vigil
   
   def initialize(args)
-    @x = args[:shell] || Class.new do
-      require 'fileutils'
-
-      def _system cmd
-        puts "# #{cmd}"
-        system cmd or raise "Failed"
-      end
-      
-      def __system cmd
-        puts "# #{cmd}"
-        system cmd
-        return $? == 0
-      end
-
-      def mkdir_p *args
-        FileUtils.mkdir_p *args
-      end
-
-      def chdir *args
-        Dir.chdir *args
-      end
-
-      def exists? *args
-        File.exists? *args
-      end
-        
-      def ln *args
-        FileUtils.ln *args
-      end
-
-    end.new
-
-    def run(project_dir, revision_id)
-      Pipeline.new(@x, project_dir, revision_id).run
-    end
+    @x = args[:shell] || Vagrant::OS.new
+  end
+  
+  def run(project_dir, revision_id)
+    Pipeline.new(@x, project_dir, revision_id).run
   end
 
   class Pipeline
@@ -59,7 +30,7 @@ class Vigil
       _create_required_directories
       @x.chdir @run_dir_revision
       _git_clone
-      VMBuilder.new(@x, @vagrant, @project_dir, @revision.id).run
+      VMBuilder.new(@x, @vagrant, @project_dir, @revision).run
       _start_vm
       _run_tests
     end
@@ -88,20 +59,15 @@ class Vigil
 
   class VMBuilder
 
-    def initialize(shell, vagrant, project_dir, revision_id)
+    def initialize(shell, vagrant, project_dir, revision)
       @x = shell
       @vagrant = vagrant
       @project_dir = project_dir
-
-      @project = File.basename(@project_dir)
-    
+      @revision = revision
+      @project = File.basename(@project_dir)    
       @run_dir = File.expand_path 'run'
-      @run_dir_project = File.join(@run_dir, @project)
-      @run_dir_boxes = File.join(@run_dir_project, 'boxes')
-
-      @previous_revision = Revision.new(revision_id.to_i-1, @project, @run_dir_boxes)
-      @revision = Revision.new(revision_id, @project, @run_dir_boxes)
-
+      run_dir_boxes = File.join(@run_dir, @project, 'boxes')
+      @previous_revision = Revision.new(@revision.id.to_i-1, @project, run_dir_boxes)
       @rebuild = false
     end
 
