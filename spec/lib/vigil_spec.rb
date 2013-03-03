@@ -6,7 +6,7 @@ describe Vigil do
     @base = File.expand_path(File.join(File.dirname(__FILE__), '..', '..'))
 
     @shell = double('shell')
-    @vigil = Vigil.new(@shell)
+    @vigil = Vigil.new(shell: @shell)
   
     @shell.stub(mkdir_p: true)
     @shell.should_receive('chdir').with("#@base/run/znork/1").ordered

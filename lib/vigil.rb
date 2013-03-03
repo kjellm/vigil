@@ -1,8 +1,10 @@
-class Vigil
+require 'vigil/revision'
+require 'vigil/vagrant'
 
+class Vigil
   
-  def initialize(shell=nil)
-    @x = shell || Class.new do
+  def initialize(args)
+    @x = args[:shell] || Class.new do
       require 'fileutils'
 
       def _system cmd
@@ -33,57 +35,37 @@ class Vigil
       end
 
     end.new
+
+    @vagrant = Vagrant.new(@x)
   end
 
 
   def run(project_dir, revision_id)
-    VMBuilder.new(@x, project_dir, revision_id).run
+    @project = File.basename(project_dir)
+    @run_dir = File.expand_path 'run'
+    @run_dir_project = File.join(@run_dir, @project)
+    @run_dir_boxes = File.join(@run_dir_project, 'boxes')
+    @revision = Revision.new(revision_id, @project, @run_dir_boxes)
+    VMBuilder.new(@x, @vagrant, project_dir, revision_id).run
+    _start_vm
+    _run_tests
   end
 
-
-  class Revision
-
-    def initialize(id, project, run_dir_boxes)
-      @id = id
-      @project = project
-      @run_dir_boxes = run_dir_boxes
-    end
-
-    def base_box_name
-      "#@project-#@id"
-    end
-
-    def base_box_path
-      _box_path(base_box_name + '.box')
-    end
-
-    def no_gems_box_name
-      base_box_name + '_no_gems'
-    end
-
-    def no_gems_box_path
-      _box_path(no_gems_box_name + '.pkg')
-    end
-
-    def complete_box_name
-      base_box_name + '_complete'
-    end
-
-    def complete_box_path
-      _box_path(complete_box_name + '.pkg')
-    end
-
-    def _box_path(box)
-      File.join(@run_dir_boxes, box)
-    end
-    
+  def _start_vm
+    @vagrant.run "box add --force '#{@revision.complete_box_name}' '#{@revision.complete_box_path}'"
+    @vagrant.use @revision.complete_box_name
+    @vagrant.run "up"
   end
 
+  def _run_tests
+    @vagrant.run "ssh -c 'cd /vagrant; rake test'"
+  end
 
   class VMBuilder
 
-    def initialize(shell, project_dir, revision_id)
+    def initialize(shell, vagrant, project_dir, revision_id)
       @x = shell
+      @vagrant = vagrant
       @project_dir = project_dir
       @revision_id = revision_id
 
@@ -108,8 +90,6 @@ class Vigil
       unless @x.exists?(@revision.complete_box_path)
         _build_vm
       end
-      _start_vm
-      _run_tests
     end
 
     def _create_required_directories
@@ -145,11 +125,11 @@ class Vigil
     end
 
     def _build_basebox
-      _vagrant "basebox build --force --nogui '#{@project}'"
-      _vagrant "basebox validate '#{@project}'"
-      _vagrant "basebox export '#{@project}'"
+      @vagrant.run "basebox build --force --nogui '#{@project}'"
+      @vagrant.run "basebox validate '#{@project}'"
+      @vagrant.run "basebox export '#{@project}'"
       @x._system "mv #{@project}.box #{@revision.base_box_path}"
-      _vagrant "basebox destroy #{@project}"
+      @vagrant.run "basebox destroy #{@project}"
     end
 
     def _setup_no_gems_box
@@ -164,11 +144,11 @@ class Vigil
     end
 
     def _build_no_gems_box
-      _vagrant "box add --force '#{@revision.base_box_name}' '#{@revision.base_box_path}'"
-      _vagrant_use @revision.base_box_name
-      _vagrant "up"
-      _vagrant "package --output #{@revision.no_gems_box_path}"
-      _vagrant "box remove #{@revision.base_box_name}"
+      @vagrant.run "box add --force '#{@revision.base_box_name}' '#{@revision.base_box_path}'"
+      @vagrant.use @revision.base_box_name
+      @vagrant.run "up"
+      @vagrant.run "package --output #{@revision.no_gems_box_path}"
+      @vagrant.run "box remove #{@revision.base_box_name}"
     end
 
     def _setup_complete_box
@@ -181,39 +161,21 @@ class Vigil
     end
 
     def _build_complete_box
-      _vagrant "box add --force '#{@revision.no_gems_box_name}' '#{@revision.no_gems_box_path}'"
-      _vagrant_use @revision.no_gems_box_name
-      _vagrant "up"
-      _vagrant "ssh -c 'sudo gem install bundler'"
-      _vagrant "ssh -c 'cd /vagrant/; bundle install'"
-      _vagrant "package --output #{@revision.complete_box_path}"
-      _vagrant "box remove '#{@revision.no_gems_box_name}'"
+      @vagrant.run "box add --force '#{@revision.no_gems_box_name}' '#{@revision.no_gems_box_path}'"
+      @vagrant.use @revision.no_gems_box_name
+      @vagrant.run "up"
+      @vagrant.run "ssh -c 'sudo gem install bundler'"
+      @vagrant.run "ssh -c 'cd /vagrant/; bundle install'"
+      @vagrant.run "package --output #{@revision.complete_box_path}"
+      @vagrant.run "box remove '#{@revision.no_gems_box_name}'"
     end
 
     def _use_old_box(box)
       @x.ln @previous_revision.send(box), @revision.send(box)
     end
 
-    def _start_vm
-      _vagrant "box add --force '#{@revision.complete_box_name}' '#{@revision.complete_box_path}'"
-      _vagrant_use @revision.complete_box_name
-      _vagrant "up"
-    end
-
-    def _run_tests
-      _vagrant "ssh -c 'cd /vagrant; rake test'"
-    end
-
     def _no_changes_relative_to_previous_revision_in?(files)
       @x.__system "git diff --quiet HEAD^ -- #{files}" #FIXME
-    end
-
-    def _vagrant(cmd)
-      @x._system "vagrant #{cmd}"
-    end
-
-    def _vagrant_use(box)
-      @x._system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{box}\\"")' Vagrantfile}
     end
 
   end
