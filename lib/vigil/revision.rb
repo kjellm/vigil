@@ -1,6 +1,8 @@
 class Vigil
   class Revision
 
+    attr_reader :id
+
     def initialize(id, project, run_dir_boxes)
       @id = id
       @project = project
