@@ -41,14 +41,30 @@ class Vigil
 
 
   def run(project_dir, revision_id)
+    @project_dir = project_dir
     @project = File.basename(project_dir)
     @run_dir = File.expand_path 'run'
     @run_dir_project = File.join(@run_dir, @project)
     @run_dir_boxes = File.join(@run_dir_project, 'boxes')
+    @run_dir_revision = File.join(@run_dir_project, revision_id)
     @revision = Revision.new(revision_id, @project, @run_dir_boxes)
+    _create_required_directories
+    @x.chdir @run_dir_revision
+    _git_clone
     VMBuilder.new(@x, @vagrant, project_dir, revision_id).run
     _start_vm
     _run_tests
+  end
+
+  def _create_required_directories
+    @x.mkdir_p @run_dir_revision
+    @x.mkdir_p @run_dir_boxes
+  end
+    
+  def _git_clone
+    return if @x.exists? File.join(@run_dir_revision, '.git')
+    @x._system "git clone #@project_dir ."
+    @x._system "git checkout vigil"  #FIXME
   end
 
   def _start_vm
@@ -67,40 +83,24 @@ class Vigil
       @x = shell
       @vagrant = vagrant
       @project_dir = project_dir
-      @revision_id = revision_id
 
       @project = File.basename(@project_dir)
     
       @run_dir = File.expand_path 'run'
       @run_dir_project = File.join(@run_dir, @project)
-      @run_dir_revision = File.join(@run_dir_project, @revision_id)
       @run_dir_boxes = File.join(@run_dir_project, 'boxes')
 
-      @previous_revision = Revision.new(@revision_id.to_i-1, @project, @run_dir_boxes)
-      @revision = Revision.new(@revision_id, @project, @run_dir_boxes)
+      @previous_revision = Revision.new(revision_id.to_i-1, @project, @run_dir_boxes)
+      @revision = Revision.new(revision_id, @project, @run_dir_boxes)
 
       @rebuild = false
     end
 
     def run
-      _create_required_directories
-      @x.chdir @run_dir_revision
-      _git_clone
       _set_up_iso_cache
       unless @x.exists?(@revision.complete_box_path)
         _build_vm
       end
-    end
-
-    def _create_required_directories
-      @x.mkdir_p @run_dir_revision
-      @x.mkdir_p @run_dir_boxes
-    end
-    
-    def _git_clone
-      return if @x.exists? File.join(@run_dir_revision, '.git')
-      @x._system "git clone #@project_dir ."
-      @x._system "git checkout vigil"  #FIXME
     end
 
     def _set_up_iso_cache
