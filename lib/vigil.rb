@@ -91,7 +91,7 @@ class Vigil
 
     def _setup_basebox
       return if @x.exists? @revision.base_box_path
-      if @x.exists?(@previous_revision.base_box_path) and _no_changes_relative_to_previous_revision_in?('definitions')
+      if @x.exists?(@previous_revision.base_box_path) and !_changes_relative_to_previous_revision_in?('definitions')
         _use_old_box(:base_box_path)
       else
         _build_basebox
@@ -110,7 +110,7 @@ class Vigil
     def _setup_no_gems_box
       return if @x.exists?(@revision.no_gems_box_path)
       if @rebuild or !@x.exists?(@previous_revision.no_gems_box_path) or
-          !_no_changes_relative_to_previous_revision_in?('manifests')
+          _changes_relative_to_previous_revision_in?('manifests')
         _build_no_gems_box
         @rebuild = true
       else
@@ -128,7 +128,7 @@ class Vigil
 
     def _setup_complete_box
       if @rebuild or !@x.exists?(@previous_revision.complete_box_path) or
-          !_no_changes_relative_to_previous_revision_in?('Gemfile*')
+          _changes_relative_to_previous_revision_in?('Gemfile*')
         _build_complete_box
       else
         _use_old_box :complete_box_path
@@ -149,8 +149,8 @@ class Vigil
       @x.ln @previous_revision.send(box), @revision.send(box)
     end
 
-    def _no_changes_relative_to_previous_revision_in?(files)
-      @x.__system "git diff --quiet HEAD^ -- #{files}" #FIXME
+    def _changes_relative_to_previous_revision_in?(files)
+      !@x.__system "git diff --quiet HEAD^ -- #{files}" #FIXME
     end
 
   end
