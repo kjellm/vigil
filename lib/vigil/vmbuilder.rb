@@ -14,9 +14,8 @@ class Vigil
     end
 
     def run
-      unless @x.exists?(@revision.complete_box_path)
-        _build_vm
-      end
+      return if @x.exists?(@revision.complete_box_path)
+      _build_vm
     end
 
     def _build_vm
