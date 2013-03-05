@@ -4,9 +4,8 @@ class Vigil
     def initialize(os, vagrant, project_dir, revision)
       @x = os
       @vagrant = vagrant
-      @project_dir = project_dir
       @revision = revision
-      @project = File.basename(@project_dir)    
+      @project = File.basename(project_dir)    
       @run_dir = File.expand_path 'run'
       run_dir_boxes = File.join(@run_dir, @project, 'boxes')
       @previous_revision = Revision.new(@revision.id.to_i-1, @project, run_dir_boxes)
