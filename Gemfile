@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem "vagrant"
 gem "veewee"
+gem "trollop"
 
 group :development do
   gem "rake"

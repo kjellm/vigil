@@ -1,15 +1,13 @@
 class Vigil
   class VMBuilder
 
-    def initialize(os, vagrant, project_dir, revision)
-      @x = os
+    def initialize(vagrant, revision, run_dir)
+      @x = Vigil.os
       @vagrant = vagrant
       @revision = revision
-      @project = File.basename(project_dir)    
-      @run_dir = File.expand_path 'run'
-      run_dir_boxes = File.join(@run_dir, @project, 'boxes')
-      @previous_revision = Revision.new(@revision.id.to_i-1, @project, run_dir_boxes)
+      @previous_revision = @revision.previous
       @rebuild = false
+      @run_dir = run_dir #FIXME
     end
 
     def run
@@ -36,11 +34,11 @@ class Vigil
 
     def _build_basebox
       _setup_iso_cache
-      @vagrant.run "basebox build --force --nogui '#{@project}'"
-      @vagrant.run "basebox validate '#{@project}'"
-      @vagrant.run "basebox export '#{@project}'"
-      @x._system "mv #{@project}.box #{@revision.base_box_path}"
-      @vagrant.run "basebox destroy #{@project}"
+      @vagrant.run "basebox build --force --nogui '#{@revision.project_name}'"
+      @vagrant.run "basebox validate '#{@revision.project_name}'"
+      @vagrant.run "basebox export '#{@revision.project_name}'"
+      @x._system "mv #{@revision.project_name}.box #{@revision.base_box_path}"
+      @vagrant.run "basebox destroy #{@revision.project_name}"
     end
 
     def _setup_iso_cache

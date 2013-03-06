@@ -3,14 +3,37 @@ class Vigil
 
     attr_reader :id
 
-    def initialize(id, project, run_dir_boxes)
+    def initialize(id, project)
       @id = id
       @project = project
-      @run_dir_boxes = run_dir_boxes
+      @run_dir_boxes = File.join(@project.working_dir, 'boxes')
+      @os = Vigil.os
+      @os.mkdir_p working_dir
+      @os.mkdir_p @run_dir_boxes
     end
   
+    def previous
+      Revision.new(@id-1, @project)
+    end
+
+    def working_dir
+      File.join(@project.working_dir, @id.to_s)
+    end
+    
+    def git_url
+      @project.git_url
+    end
+
+    def branch
+      @project.branch
+    end
+
+    def project_name
+      @project.name
+    end
+
     def base_box_name
-      "#@project-#@id"
+      "#{@project.name}-#@id"
     end
   
     def base_box_path
@@ -35,6 +58,10 @@ class Vigil
   
     def _box_path(box)
       File.join(@run_dir_boxes, box)
+    end
+    
+    def run_pipeline
+      Pipeline.new(self).run
     end
     
   end

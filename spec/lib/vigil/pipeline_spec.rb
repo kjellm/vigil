@@ -7,17 +7,19 @@ class Vigil
       @base = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
   
       @os = double('os')
+      Vigil.os = @os
       @os.stub(mkdir_p: true)
       @os.should_receive('chdir').with("#@base/run/znork/1").ordered
       @os.should_receive('exists?').with("#@base/run/znork/1/.git").ordered
       @os.should_receive('_system').with("git clone /foo/bar/znork/ .").ordered
-      @os.should_receive('_system').with("git checkout vigil").ordered
+      @os.should_receive('_system').with("git checkout master").ordered
     end
   
     after :each do
       start_complete_box_expectations
       run_tests_expectation
-      Pipeline.new(@os, '/foo/bar/znork/', '1').run
+      revision = Revision.new(1, Project.new(name: 'znork', os: @os, run_dir: "#@base/run", git_url: '/foo/bar/znork/', branch: 'master'))
+      Pipeline.new(revision).run
     end
   
     context "When the VM has already been built" do
