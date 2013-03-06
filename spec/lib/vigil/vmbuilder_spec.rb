@@ -10,7 +10,6 @@ class Vigil
     end
   
     after :each do
-      @os.stub(mkdir_p: true)
       revision = Revision.new(1, Project.new(name: 'znork', os: @os, run_dir: "/run", git_url: '/foo/bar/znork/', branch: 'master'))
       VMBuilder.new(Vagrant.new(@os), revision).run
     end

@@ -8,7 +8,6 @@ class Vigil
         @os = double('os')
         Vigil.os = @os
         Vigil.run_dir = "/run"
-        @os.stub(mkdir_p: true)
         @os.should_receive('chdir').with("/run/znork/1").ordered
         revision = Revision.new(1, Project.new(name: 'znork', os: @os, git_url: '/foo/bar/znork/', branch: 'master'))
 

@@ -11,11 +11,11 @@ class Vigil
       @os = args.fetch(:os)
       @git_url = args.fetch(:git_url)
       @branch = args.fetch(:branch)
-      @revision_repository = RevisionRepository.new(@os, self)
-      @os.mkdir_p @working_dir
+      @revision_repository = RevisionRepository.new(self)
     end
 
     def run_pipeline
+      @os.mkdir_p @working_dir
       revision = @revision_repository.new
       revision.run_pipeline
     end

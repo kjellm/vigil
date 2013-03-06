@@ -1,8 +1,8 @@
 class Vigil
   class RevisionRepository
     
-    def initialize(os, project)
-      @os = os
+    def initialize(project)
+      @os = Vigil.os
       @project = project
     end
 

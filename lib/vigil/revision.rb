@@ -8,10 +8,14 @@ class Vigil
       @project = project
       @run_dir_boxes = File.join(@project.working_dir, 'boxes')
       @os = Vigil.os
-      @os.mkdir_p working_dir
-      @os.mkdir_p @run_dir_boxes
     end
   
+    def run_pipeline
+      @os.mkdir_p working_dir
+      @os.mkdir_p @run_dir_boxes
+      Pipeline.new(self).run
+    end
+    
     def previous
       Revision.new(@id-1, @project)
     end
@@ -58,10 +62,6 @@ class Vigil
   
     def _box_path(box)
       File.join(@run_dir_boxes, box)
-    end
-    
-    def run_pipeline
-      Pipeline.new(self).run
     end
     
   end
