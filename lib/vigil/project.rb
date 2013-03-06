@@ -7,7 +7,7 @@ class Vigil
 
     def initialize(args)
       @name = args.fetch(:name)
-      @working_dir = File.join(args.fetch(:run_dir), @name)
+      @working_dir = File.join(Vigil.run_dir, @name)
       @os = args.fetch(:os)
       @git_url = args.fetch(:git_url)
       @branch = args.fetch(:branch)

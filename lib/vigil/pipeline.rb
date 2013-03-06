@@ -5,14 +5,12 @@ class Vigil
       @os = Vigil.os
       @revision = revision
       @vagrant = Vagrant.new(@os)
-
-      @run_dir = File.expand_path('run') # FIXME
     end
     
     def run
       @os.chdir @revision.working_dir
       _git_clone
-      VMBuilder.new(@vagrant, @revision, @run_dir).run
+      VMBuilder.new(@vagrant, @revision).run
       _start_vm
       _run_tests
     end

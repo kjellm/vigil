@@ -1,13 +1,12 @@
 class Vigil
   class VMBuilder
 
-    def initialize(vagrant, revision, run_dir)
+    def initialize(vagrant, revision)
       @x = Vigil.os
       @vagrant = vagrant
       @revision = revision
       @previous_revision = @revision.previous
       @rebuild = false
-      @run_dir = run_dir #FIXME
     end
 
     def run
@@ -42,7 +41,7 @@ class Vigil
     end
 
     def _setup_iso_cache
-      @x._system "ln -sf #{File.join(@run_dir, 'iso')}"
+      @x._system "ln -sf #{File.join(Vigil.run_dir, 'iso')}"
     end  
 
     def _setup_no_gems_box
