@@ -1,16 +1,17 @@
 class Vigil
   class Pipeline
 
-    def initialize(revision)
+    def initialize(revision, args={})
       @os = Vigil.os
       @revision = revision
       @vagrant = Vagrant.new(@os)
+      @vmbuilder = args[:vmbuilder] || VMBuilder.new(@vagrant, @revision)
     end
     
     def run
       @os.chdir @revision.working_dir
       _git_clone
-      VMBuilder.new(@vagrant, @revision).run
+      @vmbuilder.run
       _start_vm
       _run_tests
     end
