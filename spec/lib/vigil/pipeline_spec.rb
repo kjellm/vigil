@@ -4,7 +4,7 @@ class Vigil
   describe Pipeline do
 
     describe "#run" do
-      it do
+      it "clones the repository, runs the VMBuilder, starts the VM, and runs tests" do
         @os = double('os')
         Vigil.os = @os
         Vigil.run_dir = "/run"

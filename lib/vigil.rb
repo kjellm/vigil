@@ -17,16 +17,23 @@ class Vigil
     @x = args[:os] || Vigil::OS.new
     Vigil.os = @x
     Vigil.run_dir = File.expand_path 'run'
-    projects = args[:projects] || []
-    @projects = projects.map {|p| Project.new(name: p[:name], os: @x, git_url: p[:git][:url], branch: p[:git][:branch]) }
-
-    @x.mkdir_p self.run_dir
-
+    _initialize_projects(args[:projects] || [])
   end
   
+  def _initialize_projects(projects)
+    @projects = projects.map do |p| 
+      Project.new(
+        name:    p[:name],
+        git_url: p[:git][:url],
+        branch:  p[:git][:branch]
+      )
+    end
+  end
+    
   def run
+    @x.mkdir_p self.run_dir
     loop do
-      _not_more_often_than_every(60) do
+      _less_often_than_every(60) do
         puts "### Vigil loop"
         @projects.each do |p|
           puts "## #{p.inspect}"
@@ -36,7 +43,7 @@ class Vigil
     end
   end
 
-  def _not_more_often_than_every(n_seconds)
+  def _less_often_than_every(n_seconds)
     start = Time.now
     yield
     _end = Time.now
