@@ -10,15 +10,13 @@ class Vigil
   
   class << self
     attr :os, true
-  end
-
-  def self.run_dir
-    @run_dir ||= File.expand_path 'run'
+    attr :run_dir, true
   end
 
   def initialize(args)
     @x = args[:os] || Vigil::OS.new
     Vigil.os = @x
+    Vigil.run_dir = File.expand_path 'run'
     projects = args[:projects] || []
     @projects = projects.map {|p| Project.new(name: p[:name], os: @x, git_url: p[:git][:url], branch: p[:git][:branch]) }
 
