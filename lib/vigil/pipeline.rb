@@ -6,6 +6,7 @@ class Vigil
       @revision = revision
       @vagrant = Vagrant.new(@os)
       @vmbuilder = args[:vmbuilder] || VMBuilder.new(@vagrant, @revision)
+      @plugman = Vigil.plugman
     end
     
     def run
@@ -14,6 +15,7 @@ class Vigil
       @vmbuilder.run
       _start_vm
       _run_tests
+      @plugman.notify(:task_done, 'tests')
     end
   
     def _git_clone

@@ -7,6 +7,7 @@ class Vigil
       @os = double('os')
       Vigil.os = @os
       Vigil.run_dir = "/run"
+      Vigil.plugman = double('plugman').as_null_object
     end
   
     after :each do

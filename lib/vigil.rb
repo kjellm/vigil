@@ -1,3 +1,4 @@
+require 'plugman'
 require 'vigil/os'
 require 'vigil/pipeline'
 require 'vigil/project'
@@ -11,12 +12,14 @@ class Vigil
   class << self
     attr :os, true
     attr :run_dir, true
+    attr :plugman, true
   end
 
   def initialize(args)
     @x = args[:os] || Vigil::OS.new
     Vigil.os = @x
     Vigil.run_dir = File.expand_path 'run'
+    Vigil.plugman = Plugman.new(plugins: [])
     _initialize_projects(args[:projects] || [])
   end
   

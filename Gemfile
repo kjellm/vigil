@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem "vagrant"
 gem "veewee"
 gem "trollop"
+gem "plugman"
 
 group :development do
   gem "rake"

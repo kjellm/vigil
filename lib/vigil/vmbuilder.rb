@@ -3,6 +3,7 @@ class Vigil
 
     def initialize(vagrant, revision)
       @x = Vigil.os
+      @plugman = Vigil.plugman
       @vagrant = vagrant
       @revision = revision
       @previous_revision = @revision.previous
@@ -10,14 +11,22 @@ class Vigil
     end
 
     def run
-      return if @x.exists?(@revision.complete_box_path)
+      if @x.exists?(@revision.complete_box_path)
+        @plugman.notify(:task_done, 'VM1')
+        @plugman.notify(:task_done, 'VM2')
+        @plugman.notify(:task_done, 'VM3')
+        return
+      end
       _build_vm
     end
 
     def _build_vm
       _setup_basebox
+      @plugman.notify(:task_done, 'VM1')
       _setup_no_gems_box
+      @plugman.notify(:task_done, 'VM2')
       _setup_complete_box
+      @plugman.notify(:task_done, 'VM3')
       @rebuild = false
     end
 
