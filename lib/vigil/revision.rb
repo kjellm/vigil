@@ -13,7 +13,7 @@ class Vigil
     def run_pipeline
       @os.mkdir_p working_dir
       @os.mkdir_p @run_dir_boxes
-      Pipeline.new(self).run
+      TestPipeline.new(self).run
     end
     
     def previous

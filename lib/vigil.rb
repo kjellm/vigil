@@ -1,6 +1,8 @@
 require 'plugman'
 require 'vigil/os'
 require 'vigil/pipeline'
+require 'vigil/test_pipeline'
+require 'vigil/plugin/dcell'
 require 'vigil/project'
 require 'vigil/revision'
 require 'vigil/revision_repository'
@@ -19,7 +21,7 @@ class Vigil
     @x = args[:os] || Vigil::OS.new
     Vigil.os = @x
     Vigil.run_dir = File.expand_path 'run'
-    Vigil.plugman = Plugman.new(plugins: [])
+    Vigil.plugman = Plugman.new(plugins: [Plugin::DCell.new])
     _initialize_projects(args[:projects] || [])
   end
   
@@ -34,7 +36,7 @@ class Vigil
   end
     
   def run
-    @x.mkdir_p self.run_dir
+    @x.mkdir_p Vigil.run_dir
     loop do
       _less_often_than_every(60) do
         puts "### Vigil loop"

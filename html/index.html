@@ -1,7 +1,27 @@
-<!doctype "html">
-<html>
+<!doctype html>
+<html lang="en">
   <head>
     <link href='http://fonts.googleapis.com/css?family=Trade+Winds' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8">
+    <title>Vigil</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+      var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
+      var ws = new SocketKlass('ws://' + window.location.host + '/messages');
+      ws.onmessage = function(msg){
+        console.log(msg.data);
+        if (msg.data === "build_started") {
+          $('#VM1').removeClass();
+          $('#VM2').removeClass();
+          $('#VM3').removeClass();
+          $('#UNIT').removeClass();
+        }
+        else {
+          $("#" + msg.data).addClass("ok");
+        }
+        $('#info').text(msg.data);
+      }
+    </script>
     <style>
       html {
         background-color: #493a23;
@@ -76,14 +96,16 @@
     <div id="content">
       <h2>Foo</h2>
      
+      <div id="info"></div>
+
       <h3>Pipeline: Build #11</h3>
 
       <ol class="pipeline">
-        <li class="ok">VM #1</li>
-        <li class="ok">#2</li>
-        <li class="ok">#3</li>
-        <li class="ok">Unit tests</li>
-        <li class="failed active">Acceptance tests</li>
+        <li id="VM1">VM #1</li>
+        <li id="VM2">#2</li>
+        <li id="VM3">#3</li>
+        <li id="UNIT">Unit tests</li>
+        <li>Acceptance tests</li>
         <li>Analyze</li>
         <li>Staging deploy</li>
         <li>Smoke tests</li>
