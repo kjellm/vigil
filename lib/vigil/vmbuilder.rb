@@ -95,7 +95,7 @@ class Vigil
     end
 
     def _changes_relative_to_previous_revision_in?(files)
-      Git.differs?('HEAD^', files) #FIXME
+      Git.differs?(@previous_revision.sha, files)
     end
 
   end

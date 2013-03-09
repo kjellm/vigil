@@ -4,7 +4,7 @@ class Vigil
     def initialize(revision, args={})
       @os = Vigil.os
       @revision = revision
-      @vmbuilder = args[:vmbuilder] || VMBuilder.new(@vagrant, @revision)
+      @vmbuilder = args[:vmbuilder] || VMBuilder.new(@revision)
       @plugman = Vigil.plugman
     end
     

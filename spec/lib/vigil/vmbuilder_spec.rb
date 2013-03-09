@@ -1,6 +1,11 @@
 require 'spec_helper'
 
 class Vigil
+
+  class Revision
+    def sha; 'the_sha'; end
+  end
+
   describe VMBuilder do
 
     before :each do
@@ -42,9 +47,9 @@ class Vigil
   
       context "and none of the VM configuration files has changed" do
         it "reuses the VM" do
-          @os.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").and_return(true)
-          @os.should_receive('__system').with("git diff --quiet HEAD^ -- manifests").and_return(true)
-          @os.should_receive('__system').with("git diff --quiet HEAD^ -- Gemfile*").and_return(true)
+          @os.should_receive('__system').with("git diff --quiet the_sha -- definitions").and_return(true)
+          @os.should_receive('__system').with("git diff --quiet the_sha -- manifests").and_return(true)
+          @os.should_receive('__system').with("git diff --quiet the_sha -- Gemfile*").and_return(true)
   
           @os.should_receive('ln').with("/run/znork/boxes/znork-0.box", "/run/znork/boxes/znork-1.box").ordered
           @os.should_receive('ln').with("/run/znork/boxes/znork-0_no_gems.pkg", "/run/znork/boxes/znork-1_no_gems.pkg").ordered
@@ -54,7 +59,7 @@ class Vigil
   
       context "and only the veewee definitions has changed" do
         it "builds the VM from scratch" do
-          @os.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").and_return(false)
+          @os.should_receive('__system').with("git diff --quiet the_sha -- definitions").and_return(false)
           basebox_expectations
           no_gems_box_expectations
           complete_box_expectations
@@ -63,8 +68,8 @@ class Vigil
   
       context "and only the puppet manifests has changed" do
         it "uses the previous revisions basebox to build the VM" do
-          @os.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").and_return(true)
-          @os.should_receive('__system').with("git diff --quiet HEAD^ -- manifests").and_return(false)
+          @os.should_receive('__system').with("git diff --quiet the_sha -- definitions").and_return(true)
+          @os.should_receive('__system').with("git diff --quiet the_sha -- manifests").and_return(false)
           @os.should_receive('ln').with("/run/znork/boxes/znork-0.box", "/run/znork/boxes/znork-1.box").ordered
           no_gems_box_expectations
           complete_box_expectations
@@ -73,9 +78,9 @@ class Vigil
   
       context "and only Gemfile* has changed" do
         it "uses the previous revisions basebox to build the VM" do
-          @os.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").and_return(true)
-          @os.should_receive('__system').with("git diff --quiet HEAD^ -- manifests").and_return(true)
-          @os.should_receive('__system').with("git diff --quiet HEAD^ -- Gemfile*").and_return(false)
+          @os.should_receive('__system').with("git diff --quiet the_sha -- definitions").and_return(true)
+          @os.should_receive('__system').with("git diff --quiet the_sha -- manifests").and_return(true)
+          @os.should_receive('__system').with("git diff --quiet the_sha -- Gemfile*").and_return(false)
           @os.should_receive('ln').with("/run/znork/boxes/znork-0.box", "/run/znork/boxes/znork-1.box").ordered
           @os.should_receive('ln').with("/run/znork/boxes/znork-0_no_gems.pkg", "/run/znork/boxes/znork-1_no_gems.pkg").ordered
    

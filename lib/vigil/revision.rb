@@ -13,7 +13,7 @@ class Vigil
     def run_pipeline
       @os.mkdir_p working_dir
       @os.mkdir_p @run_dir_boxes
-      TestPipeline.new(self).run
+      Pipeline.new(self).run
     end
     
     def previous
@@ -26,6 +26,10 @@ class Vigil
     
     def git_url
       @project.git_url
+    end
+
+    def sha
+      `bash -c 'GIT_DIR=#{File.join(working_dir, '.git')} git rev-parse HEAD'` #FIXME
     end
 
     def branch
