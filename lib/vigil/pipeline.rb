@@ -4,7 +4,6 @@ class Vigil
     def initialize(revision, args={})
       @os = Vigil.os
       @revision = revision
-      @vagrant = Vagrant.new(@os)
       @vmbuilder = args[:vmbuilder] || VMBuilder.new(@vagrant, @revision)
       @plugman = Vigil.plugman
     end
@@ -25,13 +24,13 @@ class Vigil
     end
   
     def _start_vm
-      @vagrant.run "box add --force '#{@revision.complete_box_name}' '#{@revision.complete_box_path}'"
-      @vagrant.use @revision.complete_box_name
-      @vagrant.run "up"
+      Vagrant.run "box add --force '#{@revision.complete_box_name}' '#{@revision.complete_box_path}'"
+      Vagrant.use @revision.complete_box_name
+      Vagrant.run "up"
     end
   
     def _run_tests
-      @vagrant.run "ssh -c 'cd /vagrant; rake test'"
+      Vagrant.run "ssh -c 'cd /vagrant; rake test'"
     end
   end
 

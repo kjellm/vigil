@@ -1,10 +1,9 @@
 class Vigil
   class VMBuilder
 
-    def initialize(vagrant, revision)
+    def initialize(revision)
       @x = Vigil.os
       @plugman = Vigil.plugman
-      @vagrant = vagrant
       @revision = revision
       @previous_revision = @revision.previous
       @rebuild = false
@@ -42,11 +41,11 @@ class Vigil
 
     def _build_basebox
       _setup_iso_cache
-      @vagrant.run "basebox build --force --nogui '#{@revision.project_name}'"
-      @vagrant.run "basebox validate '#{@revision.project_name}'"
-      @vagrant.run "basebox export '#{@revision.project_name}'"
+      Vagrant.run "basebox build --force --nogui '#{@revision.project_name}'"
+      Vagrant.run "basebox validate '#{@revision.project_name}'"
+      Vagrant.run "basebox export '#{@revision.project_name}'"
       @x._system "mv #{@revision.project_name}.box #{@revision.base_box_path}"
-      @vagrant.run "basebox destroy #{@revision.project_name}"
+      Vagrant.run "basebox destroy #{@revision.project_name}"
     end
 
     def _setup_iso_cache
@@ -65,11 +64,11 @@ class Vigil
     end
 
     def _build_no_gems_box
-      @vagrant.run "box add --force '#{@revision.base_box_name}' '#{@revision.base_box_path}'"
-      @vagrant.use @revision.base_box_name
-      @vagrant.run "up"
-      @vagrant.run "package --output #{@revision.no_gems_box_path}"
-      @vagrant.run "box remove #{@revision.base_box_name}"
+      Vagrant.run "box add --force '#{@revision.base_box_name}' '#{@revision.base_box_path}'"
+      Vagrant.use @revision.base_box_name
+      Vagrant.run "up"
+      Vagrant.run "package --output #{@revision.no_gems_box_path}"
+      Vagrant.run "box remove #{@revision.base_box_name}"
     end
 
     def _setup_complete_box
@@ -82,13 +81,13 @@ class Vigil
     end
 
     def _build_complete_box
-      @vagrant.run "box add --force '#{@revision.no_gems_box_name}' '#{@revision.no_gems_box_path}'"
-      @vagrant.use @revision.no_gems_box_name
-      @vagrant.run "up"
-      @vagrant.run "ssh -c 'sudo gem install bundler'"
-      @vagrant.run "ssh -c 'cd /vagrant/; bundle install'"
-      @vagrant.run "package --output #{@revision.complete_box_path}"
-      @vagrant.run "box remove '#{@revision.no_gems_box_name}'"
+      Vagrant.run "box add --force '#{@revision.no_gems_box_name}' '#{@revision.no_gems_box_path}'"
+      Vagrant.use @revision.no_gems_box_name
+      Vagrant.run "up"
+      Vagrant.run "ssh -c 'sudo gem install bundler'"
+      Vagrant.run "ssh -c 'cd /vagrant/; bundle install'"
+      Vagrant.run "package --output #{@revision.complete_box_path}"
+      Vagrant.run "box remove '#{@revision.no_gems_box_name}'"
     end
 
     def _use_old_box(box)

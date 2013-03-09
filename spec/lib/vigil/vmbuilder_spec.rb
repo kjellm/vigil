@@ -12,7 +12,7 @@ class Vigil
   
     after :each do
       revision = Revision.new(1, Project.new(name: 'znork', os: @os, run_dir: "/run", git_url: '/foo/bar/znork/', branch: 'master'))
-      VMBuilder.new(Vagrant.new(@os), revision).run
+      VMBuilder.new(revision).run
     end
   
     context "When the VM has already been built" do
@@ -23,12 +23,7 @@ class Vigil
   
     context "When no VM has been built before" do
       it "builds a VM from scratch" do
-        @os.should_receive('exists?').with("/run/znork/boxes/znork-1_complete.pkg").and_return(false)
-  
-        @os.should_receive('exists?').with("/run/znork/boxes/znork-1.box").and_return(false)
-        @os.should_receive('exists?').with("/run/znork/boxes/znork-0.box").and_return(false)
-        @os.should_receive('exists?').with("/run/znork/boxes/znork-1_no_gems.pkg").and_return(false)
-  
+        @os.stub('exists?', false)
         basebox_expectations
         no_gems_box_expectations
         complete_box_expectations
@@ -37,17 +32,15 @@ class Vigil
   
     context "When a VM has been completely built for the previous revision" do
       before :each do
-        @os.should_receive('exists?').with("/run/znork/boxes/znork-1_complete.pkg").and_return(false)
+          @os.stub('exists?') do |file|
+            %w(/run/znork/boxes/znork-0.box
+               /run/znork/boxes/znork-0_no_gems.pkg
+               /run/znork/boxes/znork-0_complete.pkg).include? file
+          end
       end
   
       context "and none of the VM configuration files has changed" do
         it "reuses the VM" do
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-0.box").and_return(true)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-0_no_gems.pkg").and_return(true)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-0_complete.pkg").and_return(true)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-1.box").and_return(false)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-1_no_gems.pkg").and_return(false)
-  
           @os.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").and_return(true)
           @os.should_receive('__system').with("git diff --quiet HEAD^ -- manifests").and_return(true)
           @os.should_receive('__system').with("git diff --quiet HEAD^ -- Gemfile*").and_return(true)
@@ -60,12 +53,7 @@ class Vigil
   
       context "and only the veewee definitions has changed" do
         it "builds the VM from scratch" do
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-0.box").and_return(true)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-1.box").and_return(false)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-1_no_gems.pkg").and_return(false)
-  
           @os.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").and_return(false)
-  
           basebox_expectations
           no_gems_box_expectations
           complete_box_expectations
@@ -74,14 +62,8 @@ class Vigil
   
       context "and only the puppet manifests has changed" do
         it "uses the previous revisions basebox to build the VM" do
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-0.box").and_return(true)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-0_no_gems.pkg").and_return(true)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-1.box").and_return(false)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-1_no_gems.pkg").and_return(false)
-  
           @os.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").and_return(true)
           @os.should_receive('__system').with("git diff --quiet HEAD^ -- manifests").and_return(false)
-  
           @os.should_receive('ln').with("/run/znork/boxes/znork-0.box", "/run/znork/boxes/znork-1.box").ordered
           no_gems_box_expectations
           complete_box_expectations
@@ -90,16 +72,9 @@ class Vigil
   
       context "and only Gemfile* has changed" do
         it "uses the previous revisions basebox to build the VM" do
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-0.box").and_return(true)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-0_complete.pkg").and_return(true)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-0_no_gems.pkg").and_return(true)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-1.box").and_return(false)
-          @os.should_receive('exists?').with("/run/znork/boxes/znork-1_no_gems.pkg").and_return(false)
-  
           @os.should_receive('__system').with("git diff --quiet HEAD^ -- definitions").and_return(true)
           @os.should_receive('__system').with("git diff --quiet HEAD^ -- manifests").and_return(true)
           @os.should_receive('__system').with("git diff --quiet HEAD^ -- Gemfile*").and_return(false)
-  
           @os.should_receive('ln').with("/run/znork/boxes/znork-0.box", "/run/znork/boxes/znork-1.box").ordered
           @os.should_receive('ln').with("/run/znork/boxes/znork-0_no_gems.pkg", "/run/znork/boxes/znork-1_no_gems.pkg").ordered
    
