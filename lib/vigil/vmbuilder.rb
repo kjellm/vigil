@@ -95,7 +95,7 @@ class Vigil
     end
 
     def _changes_relative_to_previous_revision_in?(files)
-      !@x.__system "git diff --quiet HEAD^ -- #{files}" #FIXME
+      Git.differs?('HEAD^', files) #FIXME
     end
 
   end

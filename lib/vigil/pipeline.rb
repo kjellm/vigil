@@ -19,8 +19,8 @@ class Vigil
   
     def _git_clone
       return if @os.exists? File.join(@revision.working_dir, '.git')
-      @os._system "git clone #{@revision.git_url} ."
-      @os._system "git checkout #{@revision.branch}"
+      Git.clone @revision.git_url, '.'
+      Git.checkout @revision.branch
     end
   
     def _start_vm

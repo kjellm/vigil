@@ -1,4 +1,5 @@
 require 'plugman'
+require 'vigil/git'
 require 'vigil/os'
 require 'vigil/pipeline'
 require 'vigil/test_pipeline'
