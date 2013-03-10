@@ -94,7 +94,7 @@ class Vigil
       @os.should_receive('_system').with("vagrant basebox build --force --nogui 'znork'").ordered
       @os.should_receive('_system').with("vagrant basebox validate 'znork'").ordered
       @os.should_receive('_system').with("vagrant basebox export 'znork'").ordered
-      @os.should_receive('_system').with("mv znork.box /run/znork/boxes/znork-1.box").ordered
+      @os.should_receive('rename').with("znork.box", "/run/znork/boxes/znork-1.box").ordered
       @os.should_receive('_system').with("vagrant basebox destroy znork").ordered
     end
   

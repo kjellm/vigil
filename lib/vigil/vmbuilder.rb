@@ -44,7 +44,7 @@ class Vigil
       Vagrant.run "basebox build --force --nogui '#{@revision.project_name}'"
       Vagrant.run "basebox validate '#{@revision.project_name}'"
       Vagrant.run "basebox export '#{@revision.project_name}'"
-      @x._system "mv #{@revision.project_name}.box #{@revision.base_box_path}"
+      @x.rename "#{@revision.project_name}.box",  @revision.base_box_path
       Vagrant.run "basebox destroy #{@revision.project_name}"
     end
 

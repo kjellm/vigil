@@ -32,6 +32,10 @@ class Vigil
     def entries *args
       Dir.entries *args
     end
+
+    def rename *args
+      File.rename *args
+    end
     
   end
 end
