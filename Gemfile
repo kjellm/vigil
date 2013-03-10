@@ -4,7 +4,6 @@ gem "vagrant"
 gem "veewee"
 gem "trollop"
 gem "plugman"
-gem "dcell", "= 0.13.0.pre"
 
 group :development do
   gem "rake"
