@@ -1,5 +1,7 @@
 VIGIL
 =====
+[![Build Status](https://secure.travis-ci.org/kjellm/vigil.png)](http://travis-ci.org/kjellm/vigil)
+
 
 Continous deploy pipeline
 
