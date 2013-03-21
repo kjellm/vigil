@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link href='http://fonts.googleapis.com/css?family=Trade+Winds' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8">
+    <title>Vigil</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+      var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
+      var ws = new SocketKlass('ws://' + window.location.host + '/messages');
+      ws.onmessage = function(msg){
+        console.log(msg.data);
+        if (msg.data === "build_started") {
+          $('#VM1').removeClass();
+          $('#VM2').removeClass();
+          $('#VM3').removeClass();
+          $('#UNIT').removeClass();
+        }
+        else {
+          $("#" + msg.data).addClass("ok");
+        }
+        $('#info').text(msg.data);
+      }
+    </script>
+    <style>
+      html {
+        background-color: #493a23;
+      }
+      #content {
+        margin: 20px;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.9);
+        -webkit-box-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
+        box-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
+        -moz-border-radius: 2px;
+        -webkit-border-radius: 2px;
+        border-radius: 2px;
+      }
+      th { font-weight: normal; }
+      h1 {
+        font-family: 'Trade Winds', cursive;
+        margin: 20px;
+        background-color: #493a23; color: white;
+        font-size: 4em;
+        -webkit-text-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
+        text-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
+      }
+      h2, h3, h4, th { font-family: sans-serif; }
+      h2 {
+        margin-top: 0;
+      }
+      td { background-color: #d4f3fc }
+      .ok { background-color: #f8ffe8 }
+      .failed { background-color: #edbbb4 }
+      .pipeline {
+        padding: 0;
+        margin-bottom: 30px;
+      }
+      .pipeline li {
+        display: inline;
+        padding: 5px;
+        background: #d4f3fc; /* Old browsers */
+        background: -moz-linear-gradient(top, #d4f3fc 0%, #53cbf1 50%, #05abe0 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#d4f3fc), color-stop(50%,#53cbf1), color-stop(100%,#05abe0)); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, #d4f3fc 0%,#53cbf1 50%,#05abe0 100%); /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top, #d4f3fc 0%,#53cbf1 50%,#05abe0 100%); /* Opera 11.10+ */
+        background: -ms-linear-gradient(top, #d4f3fc 0%,#53cbf1 50%,#05abe0 100%); /* IE10+ */
+        background: linear-gradient(to bottom, #d4f3fc 0%,#53cbf1 50%,#05abe0 100%); /* W3C */
+        -webkit-box-shadow:  2px 2px 5px  rgba(0, 0, 0, 0.8);
+        box-shadow:  2px 2px 5px  rgba(0, 0, 0, 0.8);
+      }
+      .pipeline li.failed {
+        background: #edbbb4; /* Old browsers */
+        background: -moz-linear-gradient(top, #edbbb4 0%, #db4404 50%, #7a0a00 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#edbbb4), color-stop(50%,#db4404), color-stop(100%,#7a0a00)); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, #edbbb4 0%,#db4404 50%,#7a0a00 100%); /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top, #edbbb4 0%,#db4404 50%,#7a0a00 100%); /* Opera 11.10+ */
+        background: -ms-linear-gradient(top, #edbbb4 0%,#db4404 50%,#7a0a00 100%); /* IE10+ */
+        background: linear-gradient(to bottom, #edbbb4 0%,#db4404 50%,#7a0a00 100%); /* W3C */
+      }
+      .pipeline li.ok {
+        background: #f8ffe8; /* Old browsers */
+        background: -moz-linear-gradient(top, #f8ffe8 0%, #e3f5ab 50%, #b7df2d 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f8ffe8), color-stop(50%,#e3f5ab), color-stop(100%,#b7df2d)); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, #f8ffe8 0%,#e3f5ab 50%,#b7df2d 100%); /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top, #f8ffe8 0%,#e3f5ab 50%,#b7df2d 100%); /* Opera 11.10+ */
+        background: -ms-linear-gradient(top, #f8ffe8 0%,#e3f5ab 50%,#b7df2d 100%); /* IE10+ */
+        background: linear-gradient(to bottom, #f8ffe8 0%,#e3f5ab 50%,#b7df2d 100%); /* W3C */
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f8ffe8', endColorstr='#b7df2d',GradientType=0 ); /* IE6-9 */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Vigil</h1>
+
+    <div id="content">
+      <h2>Foo</h2>
+     
+      <div id="info"></div>
+
+      <h3>Pipeline: Build #11</h3>
+
+      <ol class="pipeline">
+        <li id="VM1">VM #1</li>
+        <li id="VM2">#2</li>
+        <li id="VM3">#3</li>
+        <li id="UNIT">Unit tests</li>
+        <li>Acceptance tests</li>
+        <li>Analyze</li>
+        <li>Staging deploy</li>
+        <li>Smoke tests</li>
+        <li>QA approved</li>
+        <li>Production deploy</li>
+        <li>Smoke tests</li>
+      </ol>
+     
+      <h3>Previous builds</h3>
+     
+      <table>
+        <tr>
+          <th>#</th>
+          <th>VM #1</th>
+          <th>#2</th>
+          <th>#3</th>
+          <th>Unit tests</th>
+          <th>Acceptance tests</th>
+          <th>Analyze</th>
+          <th>Staging deploy</th>
+          <th>Smoke tests</th>
+          <th>QA approved</th>
+          <th>Production deploy</th>
+          <th>Smoke tests</th>
+        </tr>
+        <tr>
+          <th>10</th>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+        </tr>
+        <tr>
+          <th> 9</th>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+        </tr>
+        <tr>
+          <th> 8</th>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="failed">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
