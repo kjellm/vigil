@@ -24,23 +24,26 @@
     </script>
     <style>
       html {
-        background-color: #493a23;
+        background-color: #301E0C;
       }
       #content {
-        margin: 20px;
+        width: 70em;
+        margin: 0 20px;
         padding: 20px;
-        background-color: rgba(255, 255, 255, 0.9);
+        color: #301E0C;
+        background-color: #e6d6a8;
         -webkit-box-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
         box-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
         -moz-border-radius: 2px;
         -webkit-border-radius: 2px;
         border-radius: 2px;
       }
-      th { font-weight: normal; }
+
       h1 {
         font-family: 'Trade Winds', cursive;
-        margin: 20px;
-        background-color: #493a23; color: white;
+        margin: 0 20px;
+        background-color: #301E0C;
+        color: #bf5917;
         font-size: 4em;
         -webkit-text-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
         text-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
@@ -49,9 +52,18 @@
       h2 {
         margin-top: 0;
       }
-      td { background-color: #d4f3fc }
-      .ok { background-color: #f8ffe8 }
-      .failed { background-color: #edbbb4 }
+
+      th { 
+        font-weight: normal;
+        border-right: thin #ca9922 solid;
+        border-bottom: thin #ca9922 solid;
+      }
+      td {
+        margin: 0 10px;
+      }
+      .ok { background-color: green; }
+      .failed { background-color: #a4200f; }
+
       .pipeline {
         padding: 0;
         margin-bottom: 30px;
