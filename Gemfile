@@ -1,10 +1,11 @@
 source 'https://rubygems.org'
 
+gem "dcell"
+gem "plugman"
+gem "toml"
+gem "trollop"
 gem "vagrant"
 gem "veewee"
-gem "trollop"
-gem "plugman"
-gem "dcell"
 
 group :development do
   gem "rake"
