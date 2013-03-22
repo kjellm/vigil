@@ -8,11 +8,13 @@ gem "vagrant"
 gem "veewee"
 gem 'coveralls', require: false
 
-group :development do
+group :test do
   gem "rake"
   gem "rspec"
-  gem "guard-rspec"
+end
 
+group :development do
+  gem "guard-rspec"
   if RUBY_PLATFORM.downcase.include?("darwin")
     gem 'rb-fsevent'
     gem 'terminal-notifier-guard'
