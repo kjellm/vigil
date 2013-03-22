@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem "dcell"
+gem "dcell", "> 0.13.0.pre"
 gem "plugman"
 gem "toml"
 gem "trollop"

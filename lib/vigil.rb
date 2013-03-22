@@ -9,6 +9,7 @@ require 'vigil/revision_repository'
 require 'vigil/test_pipeline'
 require 'vigil/vagrant'
 require 'vigil/vmbuilder'
+require 'vigil/plugin/dcell'
 
 class Vigil
   
@@ -22,7 +23,7 @@ class Vigil
     @x = args[:os] || Vigil::OS.new
     Vigil.os = @x
     Vigil.run_dir = File.expand_path 'run'
-    Vigil.plugman = Plugman.new(plugins: [])
+    Vigil.plugman = Plugman.new(plugins: [Vigil::Plugin::DCell.new])
     p args
     _initialize_projects(args['projects'] || {})
   end
