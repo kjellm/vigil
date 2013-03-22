@@ -1,4 +1,5 @@
-Gemfile.lock
-run
-tmp
-/vigil.yml
+/Gemfile.lock
+/pkg
+/run
+/tmp
+/vigil.toml
