@@ -6,6 +6,7 @@ gem "toml"
 gem "trollop"
 gem "vagrant"
 gem "veewee"
+gem 'coveralls', require: false
 
 group :development do
   gem "rake"
