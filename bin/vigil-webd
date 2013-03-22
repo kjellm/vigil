@@ -1,8 +1,9 @@
 #! /usr/bin/env ruby
 
-require 'reel'
+require 'celluloid/autostart'
 require 'dcell'
 require 'erb'
+require 'reel'
 
 DCell.start :id => "vigil_web_server", :addr => "tcp://127.0.0.1:1235"
 
@@ -11,9 +12,9 @@ class Inbox
   include Celluloid::Notifications
   include Celluloid::Logger
 
-  def notify(msg)
-    info "Inbox: #{msg}"
-    publish 'message_received', msg
+  def notify(project, task, status)
+    info "Inbox: '#{project}' '#{task}' '#{status}'"
+    publish 'message_received', project, task, status
   end
 end
 
@@ -27,9 +28,9 @@ class WebsocketHandler
     subscribe('message_received', :message_received)
   end
 
-  def message_received(topic, message)
-    info "#{self}: #{topic}, #{message}"
-    @socket << message
+  def message_received(topic, project, task, status)
+    info "#{self}: #{topic}, #{project}, #{task}, #{status}"
+    @socket << "#{project}.#{task}.#{status}"
   rescue Reel::SocketError
     info "Time client disconnected"
     terminate

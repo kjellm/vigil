@@ -12,19 +12,19 @@ class Vigil
         @inbox_service = @node[:inbox]
       end
 
-      def build_started
+      def build_started(project)
         info "Build started"
-        @inbox_service.notify('build_started')
+        @inbox_service.notify(project, 'build', 'started')
       end
     
-      def task_started(task)
+      def task_started(project, task)
         info "Task started: #{task}"
-        #@inbox_service.notify(task)
+        @inbox_service.notify(project, task, 'started')
       end
 
-      def task_done(report)
-        info "Task done: #{report}"
-        @inbox_service.notify(report)
+      def task_done(project, task)
+        info "Task done: #{task}"
+        @inbox_service.notify(project, task, 'done')
       end
     end
   end

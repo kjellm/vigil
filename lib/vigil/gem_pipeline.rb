@@ -9,10 +9,14 @@ class Vigil
     
     def run
       @os.chdir @revision.working_dir
+      _notify(:build_started)
       _git_clone
+      _task_started 'bundle'
       _bundle_install
+      _task_done 'bundle'
+      _task_started 'tests'
       _run_tests
-      @plugman.notify(:task_done, 'tests')
+      _task_done 'tests'
     end
   
     def _git_clone
@@ -28,5 +32,18 @@ class Vigil
     def _run_tests
       @os._system "bundle exec rake"
     end
+
+    def _task_started(task)
+      _notify(:task_started, task)
+    end
+
+    def _task_done(task)
+      _notify(:task_done, task)
+    end
+
+    def _notify(msg, *args)
+      @plugman.notify(msg, @revision.project_name, *args)
+    end
+
   end
 end

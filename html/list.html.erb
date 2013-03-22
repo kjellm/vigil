@@ -10,14 +10,24 @@
       var ws = new SocketKlass('ws://' + window.location.host + '/messages');
       ws.onmessage = function(msg){
         console.log(msg.data);
-        if (msg.data === "build_started") {
-          $('#VM1').removeClass();
-          $('#VM2').removeClass();
-          $('#VM3').removeClass();
-          $('#UNIT').removeClass();
+        var data = msg.data.split('.');
+        var project = data[0];
+        var task = data[1];
+        var status = data[2];
+        if (task === "build" && status === "started") {
+          $("#" + project + " li").removeClass();
         }
         else {
-          $("#" + msg.data).addClass("ok");
+          var klass = "failed";
+          if (status === "started") {
+            klass = "running";
+          }
+          else if (status === "done") {
+            klass = "ok";
+          }
+           
+          $("#" + project + "-" + task).removeClass();
+          $("#" + project + "-" + task).addClass(klass);
         }
         $('#info').text(msg.data);
       }
@@ -125,9 +135,9 @@
         <% projects.each do |p| %>
         <dt><%= p %> <span>Build #13, In production: #9, Virtual machine image</span></dt>
         <dd>
-          <ol class="pipeline">
-            <li id="bundle">Bundler</li>
-            <li id="tests">Tests</li>
+          <ol id="<%= p %>" class="pipeline">
+            <li id="<%= p %>-bundle">Bundler</li>
+            <li id="<%= p %>-tests">Tests</li>
             <li>Release gem</li>
           </ol>
         </dd>

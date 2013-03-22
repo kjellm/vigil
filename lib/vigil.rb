@@ -23,7 +23,7 @@ class Vigil
     @x = args[:os] || Vigil::OS.new
     Vigil.os = @x
     Vigil.run_dir = File.expand_path 'run'
-    Vigil.plugman = Plugman.new(plugins: [Vigil::Plugin::DCell.new])
+    Vigil.plugman = Plugman.new(logger: Logger.new($stderr), plugins: [Vigil::Plugin::DCell.new])
     p args
     _initialize_projects(args['projects'] || {})
   end
