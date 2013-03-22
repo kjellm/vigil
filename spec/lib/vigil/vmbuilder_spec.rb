@@ -13,12 +13,14 @@ class Vigil
       Vigil.os = @os
       Vigil.run_dir = "/run"
       Vigil.plugman = double('plugman').as_null_object
+      project = Project.new(name: 'znork', os: @os, git: @git, run_dir: "/run", git_url: '/foo/bar/znork/', branch: 'master')
+      @revision = Revision.new(1, project)
+      @previous_revision = @revision.previous
+      @revision.should_receive('previous').and_return(@previous_revision)
     end
   
     after :each do
-      project = Project.new(name: 'znork', os: @os, run_dir: "/run", git_url: '/foo/bar/znork/', branch: 'master')
-      revision = Revision.new(1, project)
-      VMBuilder.new(revision).run
+      VMBuilder.new(@revision).run
     end
   
     context "When the VM has already been built" do
@@ -47,9 +49,9 @@ class Vigil
   
       context "and none of the VM configuration files has changed" do
         it "reuses the VM" do
-          @os.should_receive('__system').with("git diff --quiet the_sha -- definitions").and_return(true)
-          @os.should_receive('__system').with("git diff --quiet the_sha -- manifests").and_return(true)
-          @os.should_receive('__system').with("git diff --quiet the_sha -- Gemfile*").and_return(true)
+          @revision.should_receive('differs?').with(@previous_revision, 'definitions').and_return(true)
+          @revision.should_receive('differs?').with(@previous_revision, 'manifests').and_return(true)
+          @revision.should_receive('differs?').with(@previous_revision, 'Gemfile*').and_return(true)
   
           @os.should_receive('ln').with("/run/znork/boxes/znork-0.box", "/run/znork/boxes/znork-1.box").ordered
           @os.should_receive('ln').with("/run/znork/boxes/znork-0_no_gems.pkg", "/run/znork/boxes/znork-1_no_gems.pkg").ordered

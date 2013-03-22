@@ -1,16 +1,31 @@
 class Vigil
-  module Git
+  class Git
 
-    def self.clone(url, target)
-      Vigil.os._system "git clone #{url} #{target}"
+    def initialize(args)
+      @git_cmd = "git"
+      @git_cmd << " --bare" if args[:bare]
+      @git_cmd << " --work-tree=" << args[:work_tree] if args[:work_tree]
+      @git_cmd << " --git-dir=" << args[:git_dir] if args[:git_dir]
     end
 
-    def self.checkout(branch)
-      Vigil.os._system "git checkout #{branch}"
+    def clone(url, target, *args)
+      cmd "clone #{args.join(' ')} #{url} #{target}"
     end
 
-    def self.differs?(rev_spec, files)
-      !Vigil.os.__system "git diff --quiet #{rev_spec} -- #{files}"
+    def checkout(branch)
+      cmd "checkout #{branch}"
+    end
+
+    def differs?(rev_spec, files)
+      !cmd("diff --quiet #{rev_spec} -- #{files}")
+    end
+
+    def fetch
+      cmd "fetch"
+    end
+
+    def cmd(str)
+      Vigil.os._system @git_cmd + " " + str
     end
 
   end

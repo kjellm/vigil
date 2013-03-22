@@ -11,7 +11,7 @@ class Vigil
     end
   
     def run_pipeline
-      @os.mkdir_p working_dir
+      @os.mkdir_p File.join(working_dir, '.vigil')
       @os.mkdir_p @run_dir_boxes
       Pipeline.new(self).run
     end
@@ -31,6 +31,11 @@ class Vigil
     def sha
       `bash -c 'GIT_DIR=#{File.join(working_dir, '.git')} git rev-parse HEAD'` #FIXME
     end
+
+    def differs?(revision, files)
+      @project.differs?(self, revision, files)
+    end
+
 
     def branch
       @project.branch

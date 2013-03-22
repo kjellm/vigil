@@ -7,6 +7,7 @@ class Vigil
       @revision = revision
       @previous_revision = @revision.previous
       @rebuild = false
+      @dot_vigil_dir = File.join(@revision.working_dir, '.vigil')
     end
 
     def run
@@ -31,7 +32,7 @@ class Vigil
 
     def _setup_basebox
       return if @x.exists? @revision.base_box_path
-      if @x.exists?(@previous_revision.base_box_path) and !_changes_relative_to_previous_revision_in?('definitions')
+      if @previous_revision.has_base_box? and !_changes_relative_to_previous_revision_in?('definitions')
         _use_old_box(:base_box_path)
       else
         _build_basebox
@@ -41,7 +42,7 @@ class Vigil
 
     def _build_basebox
       _setup_iso_cache
-      Vagrant.run "basebox build --force --nogui '#{@revision.project_name}'"
+      Vagrant.run "basebox build --force --nogui '#{@revision.project_name}'" # | tee -a #{File.join(@dot_vigil_dir, 'basbox_task.log')}"
       Vagrant.run "basebox validate '#{@revision.project_name}'"
       Vagrant.run "basebox export '#{@revision.project_name}'"
       @x.rename "#{@revision.project_name}.box",  @revision.base_box_path
@@ -95,7 +96,7 @@ class Vigil
     end
 
     def _changes_relative_to_previous_revision_in?(files)
-      Git.differs?(@previous_revision.sha, files)
+      @revision.differs?(@previous_revision, files)
     end
 
   end

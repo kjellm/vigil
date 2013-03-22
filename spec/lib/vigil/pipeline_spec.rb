@@ -23,7 +23,7 @@ class Vigil
   
     def git_clone_expectations
       @os.should_receive('exists?').with("/run/znork/1/.git").ordered
-      @os.should_receive('_system').with("git clone /foo/bar/znork/ .").ordered
+      @os.should_receive('_system').with("git clone  /foo/bar/znork/ .").ordered
       @os.should_receive('_system').with("git checkout master").ordered
     end
 
