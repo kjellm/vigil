@@ -2,6 +2,7 @@
 
 require 'reel'
 require 'dcell'
+require 'erb'
 
 DCell.start :id => "vigil_web_server", :addr => "tcp://127.0.0.1:1235"
 
@@ -75,7 +76,8 @@ class WebServer < Reel::Server
 
   def render_index(connection)
     info "200 OK: /"
-    html = File.read("html/index.html")
+    projects = ['vigil']
+    html = ERB.new(File.read("html/list.html.erb")).result(binding)
     connection.respond :ok, html
   end
 end
