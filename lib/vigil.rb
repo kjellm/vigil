@@ -1,11 +1,12 @@
 require 'plugman'
+require 'vigil/gem_pipeline'
 require 'vigil/git'
 require 'vigil/os'
 require 'vigil/pipeline'
-require 'vigil/test_pipeline'
 require 'vigil/project'
 require 'vigil/revision'
 require 'vigil/revision_repository'
+require 'vigil/test_pipeline'
 require 'vigil/vagrant'
 require 'vigil/vmbuilder'
 
@@ -22,17 +23,21 @@ class Vigil
     Vigil.os = @x
     Vigil.run_dir = File.expand_path 'run'
     Vigil.plugman = Plugman.new(plugins: [])
-    _initialize_projects(args[:projects] || [])
+    p args
+    _initialize_projects(args['projects'] || {})
   end
   
   def _initialize_projects(projects)
-    @projects = projects.map do |p| 
-      Project.new(
-        name:    p[:name],
-        git_url: p[:git][:url],
-        branch:  p[:git][:branch]
-      )
+    @projects = []
+    projects.keys.each do |k|
+      @projects << Project.new(name: k,
+                               git_url: projects[k]['url'],
+                               branch: projects[k]['branch'],
+                               type: projects[k]['type'],
+                               )
     end
+    p @projects
+    @projects
   end
     
   def run

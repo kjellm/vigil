@@ -10,10 +10,11 @@ class Vigil
       @os = Vigil.os
     end
   
-    def run_pipeline
+    def run_pipeline(type='default')
       @os.mkdir_p working_dir
       @os.mkdir_p @run_dir_boxes
-      Pipeline.new(self).run
+      pipeline = @project.type == 'gem' ? GemPipeline : Pipeline
+      pipeline.new(self).run
     end
     
     def previous
