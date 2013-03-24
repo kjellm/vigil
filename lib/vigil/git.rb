@@ -1,7 +1,7 @@
 class Vigil
   class Git
 
-    def initialize(args)
+    def initialize(args={})
       @git_cmd = "git"
       @git_cmd << " --bare" if args[:bare]
       @git_cmd << " --work-tree=" << args[:work_tree] if args[:work_tree]
@@ -17,7 +17,7 @@ class Vigil
     end
 
     def differs?(rev_spec, files)
-      !cmd("diff --quiet #{rev_spec} -- #{files}")
+      !Vigil.os.__system "#@git_cmd diff --quiet #{rev_spec} -- #{files}"
     end
 
     def fetch

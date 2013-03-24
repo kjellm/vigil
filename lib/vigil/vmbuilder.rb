@@ -7,6 +7,7 @@ class Vigil
       @revision = revision
       @previous_revision = @revision.previous
       @rebuild = false
+      @git = Git.new
     end
 
     def run
@@ -95,7 +96,7 @@ class Vigil
     end
 
     def _changes_relative_to_previous_revision_in?(files)
-      Git.differs?(@previous_revision.sha, files)
+      @git.differs?(@previous_revision.sha, files)
     end
 
   end

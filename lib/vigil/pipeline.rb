@@ -6,6 +6,7 @@ class Vigil
       @revision = revision
       @vmbuilder = args[:vmbuilder] || VMBuilder.new(@revision)
       @plugman = Vigil.plugman
+      @git = Git.new
     end
     
     def run
@@ -19,8 +20,8 @@ class Vigil
   
     def _git_clone
       return if @os.exists? File.join(@revision.working_dir, '.git')
-      Git.clone @revision.git_url, '.'
-      Git.checkout @revision.branch
+      @git.clone @revision.git_url, '.'
+      @git.checkout @revision.branch
     end
   
     def _start_vm
