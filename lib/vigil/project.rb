@@ -26,7 +26,7 @@ class Vigil
       if @os.exists?(@git_repo)
         @git.fetch
       else
-        @git.clone(@git_url, @git_repo, '--bare')
+        @git.clone(@git_url, @git_repo, '--mirror')
       end
     end
 

@@ -12,7 +12,7 @@ class Vigil
         git = double('git')
         os = double('os', mkdir_p: true)
         os.should_receive('exists?').with('/run/foo/repo.git').and_return(false)
-        git.should_receive('clone').with('/foo.git', '/run/foo/repo.git', '--bare')
+        git.should_receive('clone').with('/foo.git', '/run/foo/repo.git', '--mirror')
         Project.new(name: 'foo', git_url: '/foo.git', git: git, os: os).synchronize
       end
       
