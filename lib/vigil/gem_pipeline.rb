@@ -5,13 +5,11 @@ class Vigil
       @os = Vigil.os
       @revision = revision
       @plugman = Vigil.plugman
-      @git = Git.new
     end
     
     def run
       @os.chdir @revision.working_dir
       _notify(:build_started)
-      _git_clone
       _task_started 'bundle'
       _bundle_install
       _task_done 'bundle'
@@ -20,18 +18,12 @@ class Vigil
       _task_done 'tests'
     end
   
-    def _git_clone
-      return if @os.exists? File.join(@revision.working_dir, '.git')
-      @git.clone @revision.git_url, '.'
-      @git.checkout @revision.branch
-    end
-  
     def _bundle_install
-      @os._system "bundle install"
+      @os.system "bundle install"
     end
     
     def _run_tests
-      @os._system "bundle exec rake"
+      @os.system "bundle exec rake"
     end
 
     def _task_started(task)

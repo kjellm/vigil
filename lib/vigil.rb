@@ -9,7 +9,6 @@ require 'vigil/revision_repository'
 require 'vigil/test_pipeline'
 require 'vigil/vagrant'
 require 'vigil/vmbuilder'
-require 'vigil/plugin/dcell'
 
 class Vigil
   
@@ -23,7 +22,7 @@ class Vigil
     @x = args[:os] || Vigil::OS.new
     Vigil.os = @x
     Vigil.run_dir = File.expand_path 'run'
-    Vigil.plugman = Plugman.new(logger: Logger.new($stderr), plugins: [Vigil::Plugin::DCell.new])
+    Vigil.plugman = Plugman.new(logger: Logger.new($stderr), loader: Plugman::ConfigLoader.new(args['plugins']))
     p args
     _initialize_projects(args['projects'] || {})
   end
@@ -48,7 +47,8 @@ class Vigil
         puts "### Vigil loop"
         @projects.each do |p|
           puts "## #{p.inspect}"
-          p.run_pipeline
+          p.synchronize
+          p.run_pipeline if p.new_revision?
         end
       end
     end

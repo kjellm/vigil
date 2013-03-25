@@ -2,17 +2,20 @@ require 'fileutils'
 class Vigil
   class OS
   
-    def _system cmd
+    def system(cmd)
       puts "# #{cmd}"
-      system cmd or raise "Failed"
+      stat = super cmd
+      yield($?) if !stat and block_given?
+      stat
     end
     
-    def __system cmd
-      puts "# #{cmd}"
-      system cmd
-      return $? == 0
+    def backticks(str)
+      puts "# #{str}"
+      output = `#{str}`
+      raise "Failed: $?" if $?.exitstatus != 0
+      output
     end
-    
+
     def mkdir_p *args
       FileUtils.mkdir_p *args
     end

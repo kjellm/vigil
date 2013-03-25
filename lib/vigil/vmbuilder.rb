@@ -50,7 +50,7 @@ class Vigil
     end
 
     def _setup_iso_cache
-      @x._system "ln -sf #{File.join(Vigil.run_dir, 'iso')}"
+      @x.system "ln -sf #{File.join(Vigil.run_dir, 'iso')}"
     end  
 
     def _setup_no_gems_box

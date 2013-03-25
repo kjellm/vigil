@@ -23,18 +23,18 @@ class Vigil
   
     def git_clone_expectations
       @os.should_receive('exists?').with("/run/znork/1/.git").ordered
-      @os.should_receive('_system').with("git clone  /foo/bar/znork/ .").ordered
-      @os.should_receive('_system').with("git checkout master").ordered
+      @os.should_receive('system').with("git clone  /foo/bar/znork/ .").ordered
+      @os.should_receive('system').with("git checkout master").ordered
     end
 
     def start_complete_box_expectations
-      @os.should_receive('_system').with("vagrant box add --force 'znork-1_complete' '/run/znork/boxes/znork-1_complete.pkg'").ordered
-      @os.should_receive('_system').with(%Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1_complete\\"")' Vagrantfile}).ordered
-      @os.should_receive('_system').with("vagrant up").ordered
+      @os.should_receive('system').with("vagrant box add --force 'znork-1_complete' '/run/znork/boxes/znork-1_complete.pkg'").ordered
+      @os.should_receive('system').with(%Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1_complete\\"")' Vagrantfile}).ordered
+      @os.should_receive('system').with("vagrant up").ordered
     end
   
     def run_tests_expectation
-      @os.should_receive('_system').with("vagrant ssh -c 'cd /vagrant; rake test'").ordered
+      @os.should_receive('system').with("vagrant ssh -c 'cd /vagrant; rake test'").ordered
     end
   end
 end

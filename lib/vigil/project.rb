@@ -8,12 +8,31 @@ class Vigil
 
     def initialize(args)
       @name = args.fetch(:name)
-      @working_dir = File.join(Vigil.run_dir, @name)
-      @os = Vigil.os
       @git_url = args.fetch(:git_url)
-      @branch = args.fetch(:branch)
-      @revision_repository = RevisionRepository.new(self)
+      @working_dir = File.join(Vigil.run_dir, @name)
+      @os = args[:os] || Vigil.os
+      @branch = args[:branch] || _default_branch
+      @revision_repository = args[:revision_repository] || RevisionRepository.new(self)
       @type = args[:type] || 'default'
+      @git_repo = File.join(@working_dir, 'repo.git')
+      @git = args[:git] || Git.new(bare: true, git_dir: @git_repo)
+    end
+
+    def _default_branch; 'master'; end
+
+    def synchronize
+      p self
+      @os.mkdir_p @working_dir
+      if @os.exists?(@git_repo)
+        @git.fetch
+      else
+        @git.clone(@git_url, @git_repo, '--bare')
+      end
+    end
+
+    def new_revision?
+      return true if @revision_repository.empty?
+      @revision_repository.most_recent_revision.differs? @git
     end
 
     def run_pipeline

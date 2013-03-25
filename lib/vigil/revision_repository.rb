@@ -10,10 +10,18 @@ class Vigil
       Revision.new(most_recent_revision.id+1, @project)
     end
 
+    def empty?
+      _entries.empty?
+    end
+
     def most_recent_revision
-      id = @os.entries(@project.working_dir).select { |f| f =~ /^\d+$/ }.map {|f| f.to_i}.sort.last
+      id = _entries.sort.last
       id ||= 0
       Revision.new(id, @project)
+    end
+
+    def _entries
+      @os.entries(@project.working_dir).select { |f| f =~ /^\d+$/ }.map {|f| f.to_i}
     end
   end
 end

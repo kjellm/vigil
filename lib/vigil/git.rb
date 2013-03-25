@@ -17,7 +17,11 @@ class Vigil
     end
 
     def differs?(rev_spec, files)
-      !Vigil.os.__system "#@git_cmd diff --quiet #{rev_spec} -- #{files}"
+      !Vigil.os.system("#@git_cmd diff --quiet #{rev_spec} -- #{files}") {|stat| raise "Failed: #{stat}" if stat.exitstatus > 1}
+    end
+
+    def differs2?(rev_spec1, rev_spec2)
+      !Vigil.os.system("#@git_cmd diff --quiet #{rev_spec1} #{rev_spec2}") {|stat| raise "Failed: #{stat}" if stat.exitstatus > 1}
     end
 
     def fetch
@@ -25,7 +29,7 @@ class Vigil
     end
 
     def cmd(str)
-      Vigil.os._system @git_cmd + " " + str
+      Vigil.os.system @git_cmd + " " + str
     end
 
   end

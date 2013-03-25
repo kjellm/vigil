@@ -2,21 +2,28 @@ class Vigil
   class Revision
 
     attr_reader :id
-
+    
     def initialize(id, project)
       @id = id
       @project = project
       @run_dir_boxes = File.join(@project.working_dir, 'boxes')
       @os = Vigil.os
+      @git_origin = File.join(@project.working_dir, 'repo.git')
+      @git = Git.new(git_dir: File.join(working_dir, '.git'), work_tree: working_dir)
     end
   
     def run_pipeline(type='default')
-      @os.mkdir_p working_dir
+      _git_clone
       @os.mkdir_p @run_dir_boxes
       pipeline = @project.type == 'gem' ? GemPipeline : Pipeline
       pipeline.new(self).run
     end
-    
+
+    def _git_clone
+      Git.new.clone @git_origin, working_dir, '--shared'
+      @git.checkout branch
+    end
+  
     def previous
       Revision.new(@id-1, @project)
     end
@@ -30,7 +37,7 @@ class Vigil
     end
 
     def sha
-      `bash -c 'GIT_DIR=#{File.join(working_dir, '.git')} git rev-parse HEAD'` #FIXME
+      @os.backticks "bash -c 'GIT_DIR=#{File.join(working_dir, '.git')} git rev-parse HEAD'" #FIXME
     end
 
     def branch
@@ -68,7 +75,11 @@ class Vigil
     def _box_path(box)
       File.join(@run_dir_boxes, box)
     end
-    
+  
+    def differs?(git)
+      git.differs2? branch, sha
+    end
+  
   end
 end
 
