@@ -25,7 +25,7 @@ class Vigil
     end
 
     def fetch
-      cmd "fetch"
+      cmd "fetch --all"
     end
 
     def cmd(str)
