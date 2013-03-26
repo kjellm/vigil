@@ -1,3 +1,5 @@
+require 'kramdown'
+
 class Vigil
   class Project
     attr_reader :branch
@@ -39,6 +41,10 @@ class Vigil
       @os.mkdir_p @working_dir
       revision = @revision_repository.new
       revision.run_pipeline(@type)
+    end
+
+    def readme
+      Kramdown::Document.new(File.read(File.join(@revision_repository.most_recent_revision.working_dir, 'README.md')))
     end
   end
 end

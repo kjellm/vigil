@@ -8,6 +8,10 @@ require 'vigil'
 
 DCell.start :id => "vigil_web_server", :addr => "tcp://127.0.0.1:1235"
 
+Vigil.os = Vigil::OS.new
+Vigil.run_dir = File.expand_path 'run'
+
+
 class Inbox
   include Celluloid
   include Celluloid::Notifications
@@ -60,8 +64,12 @@ class WebServer < Reel::Server
   end
 
   def route_request(connection, request)
-    if request.url == "/"
+    case request.url
+    when "/"
       return render_index(connection)
+    when /project\/.*/
+      parts = request.url.split('/')
+      return render_project(parts[2], connection)
     end
 
     info "404 Not Found: #{request.path}"
@@ -81,6 +89,17 @@ class WebServer < Reel::Server
     info "200 OK: /"
     projects = @config.opts["projects"].keys
     html = ERB.new(File.read("html/list.html.erb")).result(binding)
+    connection.respond :ok, html
+  end
+
+  def render_project(name, connection)
+    project = Vigil::ProjectRepository.new(@config).find(name)
+    unless project
+      info "404 Not Found: FIXME"
+      return connection.respond :not_found, "Not found"
+    end
+    info "200 OK: /project/#{name}"
+    html = ERB.new(File.read("html/project.html.erb")).result(binding)
     connection.respond :ok, html
   end
 end

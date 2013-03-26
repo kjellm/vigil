@@ -7,6 +7,7 @@ gem "trollop"
 gem "vagrant"
 gem "veewee"
 gem 'coveralls', require: false
+gem "kramdown"
 
 group :test do
   gem "rake"
