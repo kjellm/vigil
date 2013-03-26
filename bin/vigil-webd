@@ -4,6 +4,7 @@ require 'celluloid/autostart'
 require 'dcell'
 require 'erb'
 require 'reel'
+require 'vigil'
 
 DCell.start :id => "vigil_web_server", :addr => "tcp://127.0.0.1:1235"
 
@@ -42,6 +43,7 @@ class WebServer < Reel::Server
 
   def initialize(host = "0.0.0.0", port = 1236)
     info "Web server starting on #{host}:#{port}"
+    @config = Vigil::Config.new
     super(host, port, &method(:on_connection))
   end
 
@@ -77,7 +79,7 @@ class WebServer < Reel::Server
 
   def render_index(connection)
     info "200 OK: /"
-    projects = ['vigil']
+    projects = @config.opts["projects"].keys
     html = ERB.new(File.read("html/list.html.erb")).result(binding)
     connection.respond :ok, html
   end
