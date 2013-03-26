@@ -1,3 +1,5 @@
+require 'vigil/task'
+
 require 'plugman'
 require 'vigil/config'
 require 'vigil/gem_pipeline'

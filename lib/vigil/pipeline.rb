@@ -1,5 +1,6 @@
 class Vigil
   class Pipeline
+    include Task
 
     def initialize(revision, args={})
       @os = Vigil.os
@@ -11,17 +12,10 @@ class Vigil
     
     def run
       @os.chdir @revision.working_dir
-      _git_clone
+      notify(:build_started)
       @vmbuilder.run
-      _start_vm
-      _run_tests
-      @plugman.notify(:task_done, 'tests')
-    end
-  
-    def _git_clone
-      return if @os.exists? File.join(@revision.working_dir, '.git')
-      @git.clone @revision.git_url, '.'
-      @git.checkout @revision.branch
+      task('boot_vm') { _start_vm }
+      task('tests') { _run_tests }
     end
   
     def _start_vm
@@ -33,6 +27,6 @@ class Vigil
     def _run_tests
       Vagrant.run "ssh -c 'cd /vagrant; rake test'"
     end
-  end
 
+  end
 end

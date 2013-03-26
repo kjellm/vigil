@@ -1,5 +1,6 @@
 class Vigil
   class VMBuilder
+    include Task
 
     def initialize(revision)
       @x = Vigil.os
@@ -12,24 +13,21 @@ class Vigil
 
     def run
       if @x.exists?(@revision.complete_box_path)
-        @plugman.notify(:task_done, 'VM1')
-        @plugman.notify(:task_done, 'VM2')
-        @plugman.notify(:task_done, 'VM3')
+        task_done 'VM1'
+        task_done 'VM2'
+        task_done 'VM3'
         return
       end
       _build_vm
     end
 
     def _build_vm
-      _setup_basebox
-      @plugman.notify(:task_done, 'VM1')
-      _setup_no_gems_box
-      @plugman.notify(:task_done, 'VM2')
-      _setup_complete_box
-      @plugman.notify(:task_done, 'VM3')
+      task('VM1') { _setup_basebox }
+      task('VM2') { _setup_no_gems_box }
+      task('VM3') { _setup_complete_box }
       @rebuild = false
     end
-
+    
     def _setup_basebox
       return if @x.exists? @revision.base_box_path
       if @x.exists?(@previous_revision.base_box_path) and !_changes_relative_to_previous_revision_in?('definitions')
