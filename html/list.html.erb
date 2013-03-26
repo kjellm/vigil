@@ -32,101 +32,10 @@
         $('#info').text(msg.data);
       }
     </script>
-    <style>
-      html {
-        background-color: #301E0C;
-      }
-      #content {
-        width: 70em;
-        margin: 0 20px;
-        padding: 20px;
-        color: #301E0C;
-        background-color: #e6d6a8;
-        -webkit-box-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
-        box-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
-        -moz-border-radius: 2px;
-        -webkit-border-radius: 2px;
-        border-radius: 2px;
-      }
-
-      h1 {
-        font-family: 'Trade Winds', cursive;
-        margin: 0 20px;
-        background-color: #301E0C;
-        color: #bf5917;
-        font-size: 4em;
-        -webkit-text-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
-        text-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
-      }
-      h2, h3, h4, th { font-family: sans-serif; }
-      h2 {
-        margin-top: 0;
-      }
-
-      th { 
-        font-weight: normal;
-      }
-      td {
-        margin: 0 10px;
-      }
-      .ok { background-color: green; }
-      .failed { background-color: #a4200f; }
-
-      .pipeline {
-        padding: 0;
-      }
-      .pipeline li {
-        display: inline-block;
-        padding: 5px;
-        background: #d4f3fc; /* Old browsers */
-        background: -moz-linear-gradient(top, #d4f3fc 0%, #53cbf1 50%, #05abe0 100%); /* FF3.6+ */
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#d4f3fc), color-stop(50%,#53cbf1), color-stop(100%,#05abe0)); /* Chrome,Safari4+ */
-        background: -webkit-linear-gradient(top, #d4f3fc 0%,#53cbf1 50%,#05abe0 100%); /* Chrome10+,Safari5.1+ */
-        background: -o-linear-gradient(top, #d4f3fc 0%,#53cbf1 50%,#05abe0 100%); /* Opera 11.10+ */
-        background: -ms-linear-gradient(top, #d4f3fc 0%,#53cbf1 50%,#05abe0 100%); /* IE10+ */
-        background: linear-gradient(to bottom, #d4f3fc 0%,#53cbf1 50%,#05abe0 100%); /* W3C */
-        -webkit-box-shadow:  2px 2px 5px  rgba(0, 0, 0, 0.8);
-        box-shadow:  2px 2px 5px  rgba(0, 0, 0, 0.8);
-        -moz-border-radius: 5px;
-        -webkit-border-radius: 5px;
-        border-radius: 5px;
-      }
-      .pipeline li.running {
-        margin: 0 10px;
-        -moz-transform: scale(1.3);
-        -webkit-transform: scale(1.3);
-        -ms-transform: scale(1.2);
-        transform: scale(1.2);
-        -webkit-box-shadow:  4px 4px 5px  rgba(0, 0, 0, 0.8);
-        box-shadow:  4px 4px 10px  rgba(0, 0, 0, 0.8);
-      }
-      .pipeline li.failed {
-        background: #edbbb4; /* Old browsers */
-        background: -moz-linear-gradient(top, #edbbb4 0%, #db4404 50%, #7a0a00 100%); /* FF3.6+ */
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#edbbb4), color-stop(50%,#db4404), color-stop(100%,#7a0a00)); /* Chrome,Safari4+ */
-        background: -webkit-linear-gradient(top, #edbbb4 0%,#db4404 50%,#7a0a00 100%); /* Chrome10+,Safari5.1+ */
-        background: -o-linear-gradient(top, #edbbb4 0%,#db4404 50%,#7a0a00 100%); /* Opera 11.10+ */
-        background: -ms-linear-gradient(top, #edbbb4 0%,#db4404 50%,#7a0a00 100%); /* IE10+ */
-        background: linear-gradient(to bottom, #edbbb4 0%,#db4404 50%,#7a0a00 100%); /* W3C */
-      }
-      .pipeline li.ok {
-        background: #f8ffe8; /* Old browsers */
-        background: -moz-linear-gradient(top, #f8ffe8 0%, #e3f5ab 50%, #b7df2d 100%); /* FF3.6+ */
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f8ffe8), color-stop(50%,#e3f5ab), color-stop(100%,#b7df2d)); /* Chrome,Safari4+ */
-        background: -webkit-linear-gradient(top, #f8ffe8 0%,#e3f5ab 50%,#b7df2d 100%); /* Chrome10+,Safari5.1+ */
-        background: -o-linear-gradient(top, #f8ffe8 0%,#e3f5ab 50%,#b7df2d 100%); /* Opera 11.10+ */
-        background: -ms-linear-gradient(top, #f8ffe8 0%,#e3f5ab 50%,#b7df2d 100%); /* IE10+ */
-        background: linear-gradient(to bottom, #f8ffe8 0%,#e3f5ab 50%,#b7df2d 100%); /* W3C */
-      }
-
-      dt span {
-        color: #bf5917;
-        font-style: italic;
-      }
-    </style>
+    <link rel="stylesheet" href="/static/main.css" type="text/css" />
   </head>
   <body>
-    <h1>Vigil</h1>
+    <h1 id="title">Vigil</h1>
 
     <div id="content">
       <h2>Projects</h2>

@@ -64,15 +64,25 @@ class WebServer < Reel::Server
   end
 
   def route_request(connection, request)
+    info "URL: #{request.url}"
     case request.url
     when "/"
       return render_index(connection)
-    when /project\/.*/
+    when /\/project\/.*/
       parts = request.url.split('/')
       return render_project(parts[2], connection)
+    when /\/(static\/.*)/
+      file = $1
+      return not_found(connection, request.url) unless File.exists?(file)
+      info "200 OK: #{request.url}"
+      html = File.read(file)
+      return connection.respond :ok, html
     end
+    not_found(connection, request.path)
+  end
 
-    info "404 Not Found: #{request.path}"
+  def not_found(connection, path)
+    info "404 Not Found: #{path}"
     connection.respond :not_found, "Not found"
   end
 
