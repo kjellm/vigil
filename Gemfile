@@ -7,7 +7,7 @@ gem "trollop"
 gem "vagrant"
 gem "veewee"
 gem 'coveralls', require: false
-gem "kramdown"
+gem "redcarpet"
 
 group :test do
   gem "rake"

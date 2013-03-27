@@ -24,8 +24,23 @@ h1#title {
   -webkit-text-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
   text-shadow:  10px 10px 5px  rgba(0, 0, 0, 0.8);
 }
-h2 {
-  margin-top: 0;
+#content > h2 {
+   margin: -10px -10px 20px -10px;
+   padding: 10px;
+   background-color: #301E0C;
+   color: #a4200f;
+   font-size: 2em;
+   -moz-border-radius: 4px;
+   -webkit-border-radius: 4px;
+   border-radius: 4px;
+}
+#content > h3 {
+   margin: 20px -10px 20px -10px;
+   border-bottom: solid 2px #a4200f;
+}
+#content > h3:before {
+   content: "» ";
+   color: #a4200f;
 }
 
 th { 
@@ -90,6 +105,6 @@ dt span {
 }
 
 #readme {
-  background-color: #dac27a;
-  padding: 1em;
+  /* background-color: #dac27a; */
+   max-width: 50em;
 }

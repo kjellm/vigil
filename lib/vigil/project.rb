@@ -1,4 +1,4 @@
-require 'kramdown'
+require 'redcarpet'
 
 class Vigil
   class Project
@@ -44,7 +44,8 @@ class Vigil
     end
 
     def readme
-      Kramdown::Document.new(File.read(File.join(@revision_repository.most_recent_revision.working_dir, 'README.md')))
+      md = Redcarpet::Markdown.new(Redcarpet::Render::HTML, fenced_code_blocks: true)
+      md.render(File.read(File.join(@revision_repository.most_recent_revision.working_dir, 'README.md')))
     end
   end
 end
