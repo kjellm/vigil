@@ -8,12 +8,5 @@ opts = Trollop::options do
   opt :rcfile, "Path to the configuration file"
 end
 
-root = File.join(File.dirname(__FILE__), '..')
-if !opts[:rcfile] and File.exists?(File.join(root, '.git'))
-  opts[:rcfile] = File.join root, 'vigil.toml'
-end
-
-opts = TOML.load_file(opts[:rcfile]).merge(opts)
-
 Vigil.new(opts).run
 

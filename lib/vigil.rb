@@ -23,33 +23,21 @@ class Vigil
   end
 
   def initialize(args)
+    @config = Config.new(args)
     @x = args[:os] || Vigil::OS.new
     Vigil.os = @x
     Vigil.run_dir = File.expand_path 'run'
     Vigil.plugman = Plugman.new(logger: Logger.new($stderr), loader: Plugman::ConfigLoader.new(args['plugins']))
     p args
-    _initialize_projects(args['projects'] || {})
+    @project_repository = ProjectRepository.new(@config)
   end
   
-  def _initialize_projects(projects)
-    @projects = []
-    projects.keys.each do |k|
-      @projects << Project.new(name: k,
-                               git_url: projects[k]['url'],
-                               branch: projects[k]['branch'],
-                               type: projects[k]['type'],
-                               )
-    end
-    p @projects
-    @projects
-  end
-    
   def run
     @x.mkdir_p Vigil.run_dir
     loop do
       _less_often_than_every(60) do
         puts "### Vigil loop"
-        @projects.each do |p|
+        @project_repository.to_a.each do |p|
           puts "## #{p.inspect}"
           p.synchronize
           p.run_pipeline if p.new_revision?
