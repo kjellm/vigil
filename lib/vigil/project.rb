@@ -23,7 +23,6 @@ class Vigil
     def _default_branch; 'master'; end
 
     def synchronize
-      p self
       @os.mkdir_p @working_dir
       if @os.exists?(@git_repo)
         @git.fetch
