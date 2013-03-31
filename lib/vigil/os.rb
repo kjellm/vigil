@@ -3,9 +3,11 @@ class Vigil
   class OS
   
     def system(cmd)
-      puts "# #{cmd}"
+      Vigil.logger.info "# #{cmd}"
       stat = super cmd
-      yield($?) if !stat and block_given?
+      unless stat
+        block_given? ? yield($?) : raise("Failed")
+      end
       stat
     end
     
