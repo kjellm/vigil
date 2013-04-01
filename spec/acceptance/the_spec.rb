@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'tempfile'
-require 'FileUtils'
+require 'fileutils'
 
 describe "Vigil" do
 
