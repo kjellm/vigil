@@ -3,7 +3,7 @@ class Vigil
   class OS
   
     def system(cmd)
-      Vigil.logger.info "# #{cmd}"
+      Vigil.logger.info "$ #{cmd}"
       stat = super cmd
       unless stat
         block_given? ? yield($?) : raise("Failed")
@@ -11,10 +11,10 @@ class Vigil
       stat
     end
     
-    def backticks(str)
-      puts "# #{str}"
-      output = `#{str}`
-      raise "Failed: $?" if $?.exitstatus != 0
+    def backticks(cmd)
+      Vigil.logger.info "$ #{cmd}"
+      output = `#{cmd}`
+      raise "Failed: #{$?.exitstatus}" if $?.exitstatus != 0
       output
     end
 
