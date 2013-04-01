@@ -18,6 +18,8 @@ EOF
         rcfile.close
         git = Vigil::Git.new(git_dir: File.join(test_repo_dir, '.git'), work_tree: test_repo_dir)
         git.cmd("init")
+        git.cmd('config user.email "you@example.com"')
+        git.cmd('config user.name "Your Name"')
         FileUtils.touch(File.join(test_repo_dir, 'README'))
         File.write(File.join(test_repo_dir, 'Rakefile'), "task(:default) {true}")
         git.cmd("add .")
