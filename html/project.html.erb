@@ -38,7 +38,7 @@
     <h1 id="title">Vigil</h1>
 
     <div id="content">
-      <h2><%= project.name %></h2>
+      <h2><%= project.name.capitalize %></h2>
       
       <ol id="<%= project.name %>" class="pipeline">
         <li id="<%= project.name %>-bundle">Bundler</li>
@@ -47,6 +47,46 @@
       </ol>
 
       <h3>Builds</h3>
+
+      <table>
+        <tr>
+          <th>#</th>
+          <th>Bundler</th>
+          <th>Tests</th>
+          <th>Release gem</th>
+        </tr>
+        <tr>
+          <th>10</th>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="">.</td>
+        </tr>
+        <tr>
+          <th> 9</th>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+        </tr>
+        <tr>
+          <th> 8</th>
+          <td class="ok">.</td>
+          <td class="ok">.</td>
+          <td class="failed">.</td>
+        </tr>
+        <tr>
+          <th> 7</th>
+          <td class="ok">.</td>
+          <td class="failed">.</td>
+          <td class="">.</td>
+        </tr>
+        <tr>
+          <th> 6</th>
+          <td class="failed">.</td>
+          <td class="">.</td>
+          <td class="">.</td>
+        </tr>
+      </table>
+
 
       <h3>README</h3>
 
