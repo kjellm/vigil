@@ -69,8 +69,12 @@ class WebServer < Reel::Server
       return render_project(parts[2], connection)
     when /\/(static\/.*)/
       return static(connection, request, $1)
-    when /coverage\/(.*)/
-      return static(connection, request, File.join(@vigil.latest_revision($1).working_dir, 'coverage/index.html'))
+    when /coverage\/([^\/]*)\/?(.*)?/
+      if $1 == $2
+        return static(connection, request, File.join(@vigil.latest_revision($1).working_dir, 'coverage/index.html'))
+      else
+        return static(connection, request, File.join(@vigil.latest_revision($1).working_dir, 'coverage', $2))
+      end
     end
     info "HERE"
     not_found(connection, request.path)
