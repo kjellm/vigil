@@ -33,7 +33,11 @@ class Vigil
 
     def new_revision?
       return true if @revision_repository.empty?
-      @revision_repository.most_recent_revision.differs? @git
+      most_recent_revision.differs? @git
+    end
+
+    def most_recent_revision
+      @revision_repository.most_recent_revision
     end
 
     def run_pipeline
@@ -44,7 +48,7 @@ class Vigil
 
     def readme
       md = Redcarpet::Markdown.new(Redcarpet::Render::HTML, fenced_code_blocks: true)
-      md.render(File.read(File.join(@revision_repository.most_recent_revision.working_dir, 'README.md')))
+      md.render(File.read(File.join(most_recent_revision.working_dir, 'README.md')))
     end
   end
 end

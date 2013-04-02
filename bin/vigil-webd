@@ -8,10 +8,6 @@ require 'vigil'
 
 DCell.start :id => "vigil_web_server", :addr => "tcp://127.0.0.1:1235"
 
-Vigil.os = Vigil::OS.new
-Vigil.run_dir = File.expand_path 'run'
-
-
 class Inbox
   include Celluloid
   include Celluloid::Notifications
@@ -47,7 +43,7 @@ class WebServer < Reel::Server
 
   def initialize(host = "0.0.0.0", port = 1236)
     info "Web server starting on #{host}:#{port}"
-    @config = Vigil::Config.new
+    @vigil = Vigil.new
     super(host, port, &method(:on_connection))
   end
 
@@ -72,13 +68,19 @@ class WebServer < Reel::Server
       parts = request.url.split('/')
       return render_project(parts[2], connection)
     when /\/(static\/.*)/
-      file = $1
-      return not_found(connection, request.url) unless File.exists?(file)
-      info "200 OK: #{request.url}"
-      html = File.read(file)
-      return connection.respond :ok, html
+      return static(connection, request, $1)
+    when /coverage\/(.*)/
+      return static(connection, request, File.join(@vigil.latest_revision($1).working_dir, 'coverage/index.html'))
     end
+    info "HERE"
     not_found(connection, request.path)
+  end
+
+  def static(connection, request, file)
+    return not_found(connection, file) unless File.exists?(file)
+    info "200 OK: #{request.url}"
+    html = File.read(file)
+    return connection.respond :ok, html
   end
 
   def not_found(connection, path)
@@ -103,7 +105,7 @@ class WebServer < Reel::Server
   end
 
   def render_project(name, connection)
-    project = Vigil::ProjectRepository.new(@config).find(name)
+    project = @vigil.project(name)
     unless project
       info "404 Not Found: FIXME"
       return connection.respond :not_found, "Not found"

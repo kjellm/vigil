@@ -6,15 +6,16 @@ gem "toml"
 gem "trollop"
 gem "vagrant"
 gem "veewee"
-gem 'coveralls', require: false
 gem "redcarpet"
 
 group :test do
+  gem 'coveralls', require: false
   gem "rake"
   gem "rspec"
 end
 
 group :development do
+  gem "simplecov"
   gem "guard-rspec"
   if RUBY_PLATFORM.downcase.include?("darwin")
     gem 'rb-fsevent'

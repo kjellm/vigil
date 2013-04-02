@@ -6,3 +6,9 @@ task :default => :spec
 
 desc "Run specs"
 RSpec::Core::RakeTask.new
+
+desc "Test coverage"
+task :cov do
+  ENV["COVERAGE"] = 'true'
+  sh "rspec spec/lib"
+end

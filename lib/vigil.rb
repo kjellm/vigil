@@ -53,4 +53,12 @@ class Vigil
     end
   end
 
+  def project(name)
+    @project_repository.find(name)
+  end
+
+  def latest_revision(project_name)
+    project(project_name).most_recent_revision
+  end
+
 end
