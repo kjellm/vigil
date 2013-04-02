@@ -6,6 +6,12 @@ class Vigil
       @git_cmd << " --bare" if args[:bare]
       @git_cmd << " --work-tree=" << args[:work_tree] if args[:work_tree]
       @git_cmd << " --git-dir=" << args[:git_dir] if args[:git_dir]
+
+      @os = Vigil.os
+    end
+
+    def init
+      cmd "init"
     end
 
     def clone(url, target, *args)
@@ -17,11 +23,15 @@ class Vigil
     end
 
     def differs?(rev_spec, files)
-      !Vigil.os.system("#@git_cmd diff --quiet #{rev_spec} -- #{files}") {|stat| raise "Failed: #{stat}" if stat.exitstatus > 1}
+      _differs?("#{rev_spec} -- #{files}")
     end
 
     def differs2?(rev_spec1, rev_spec2)
-      !Vigil.os.system("#@git_cmd diff --quiet #{rev_spec1} #{rev_spec2}") {|stat| raise "Failed: #{stat}" if stat.exitstatus > 1}
+      _differs?("#{rev_spec1} #{rev_spec2}")
+    end
+
+    def _differs?(str)
+      !@os.system("#@git_cmd diff --quiet #{str}") {|stat| raise "Failed: #{stat}" if stat.exitstatus > 1}
     end
 
     def fetch
@@ -29,7 +39,7 @@ class Vigil
     end
 
     def cmd(str)
-      Vigil.os.system @git_cmd + " " + str
+      @os.system @git_cmd + " " + str
     end
 
   end

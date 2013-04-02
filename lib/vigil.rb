@@ -6,6 +6,7 @@ require 'vigil/gem_pipeline'
 require 'vigil/git'
 require 'vigil/os'
 require 'vigil/pipeline'
+require 'vigil/poll'
 require 'vigil/project'
 require 'vigil/project_repository'
 require 'vigil/revision'
@@ -17,43 +18,39 @@ require 'vigil/vmbuilder'
 class Vigil
   
   class << self
-    attr :os, true
-    attr :run_dir, true
-    attr :plugman, true
+    attr_accessor :os
+    attr_accessor :run_dir
+    attr_accessor :plugman
+    attr_accessor :logger
   end
 
-  def initialize(args)
+  begin
+    Vigil.os = Vigil::OS.new
+    Vigil.run_dir = File.expand_path('run')
+    Vigil.logger = Logger.new($stderr)
+    Vigil.plugman = Plugman.new(logger: Vigil.logger)
+  end
+
+  def initialize(args = {})
     @config = Config.new(args)
-    @x = args[:os] || Vigil::OS.new
-    Vigil.os = @x
-    Vigil.run_dir = File.expand_path 'run'
-    Vigil.plugman = Plugman.new(logger: Logger.new($stderr), loader: Plugman::ConfigLoader.new(args['plugins']))
-    p args
+    Vigil.os = args[:os] if args[:os]
+    Vigil.run_dir = @config[:run_dir] if @config[:run_dir]
+    Vigil.plugman = Plugman.new(logger: Vigil.logger, loader: Plugman::ConfigLoader.new(@config['plugins']))
     @project_repository = ProjectRepository.new(@config)
+    @os = Vigil.os
+    @loop = args[:loop] || Poll.new(60)
+    @log = Vigil.logger
   end
   
   def run
-    @x.mkdir_p Vigil.run_dir
-    loop do
-      _less_often_than_every(60) do
-        puts "### Vigil loop"
-        @project_repository.to_a.each do |p|
-          puts "## #{p.inspect}"
-          p.synchronize
-          p.run_pipeline if p.new_revision?
-        end
+    @os.mkdir_p Vigil.run_dir
+    @loop.call do
+      @log.debug "LOOP"
+      @project_repository.to_a.each do |p|
+        p.synchronize
+        p.run_pipeline if p.new_revision?
       end
     end
   end
 
-  def _less_often_than_every(n_seconds)
-    start = Time.now
-    yield
-    _end = Time.now
-    if _end - start < n_seconds
-      n = n_seconds - (_end - start)
-      puts "Sleeping for #{n} sec."
-      sleep n
-    end
-  end
 end

@@ -15,5 +15,13 @@ class Vigil
       @opts = TOML.load_file(opts[:rcfile]).merge(opts)
     end
 
+    def [](key)
+      @opts[key]
+    end
+
+    def fetch(key)
+      @opts.fetch(key)
+    end
+
   end
 end
