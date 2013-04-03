@@ -2,13 +2,10 @@ require 'spec_helper'
 
 class Vigil
 
-  class Revision
-    def sha; 'the_sha'; end
-  end
-
   describe VMBuilder do
 
     before :each do
+      Revision.any_instance.stub(sha: 'the_sha')
       @os = double('os')
       Vigil.os = @os
       Vigil.run_dir = "/run"

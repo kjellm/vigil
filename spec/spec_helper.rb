@@ -8,3 +8,11 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
 SimpleCov.start
 
 require 'vigil'
+
+class Vigil
+  module Task
+    def _redirected
+      yield
+    end
+  end
+end

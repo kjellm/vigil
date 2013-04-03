@@ -1,8 +1,14 @@
 class Vigil
   module Task
 
-    def task(desc)
+    def task(desc, &block)
       task_started desc
+      _redirected(&block)
+      task_done desc
+    end
+
+    
+    def _redirected
       out = File.open(File.join(@revision.working_dir, ".vigil_task_#{desc}.log"), 'w')
       orig_stderr = $stderr.clone
       orig_stdout = $stdout.clone
@@ -15,9 +21,7 @@ class Vigil
         $stdout.reopen(orig_stdout)
         out.close
       end
-      task_done desc
     end
-
 
     def task_started(task)
       notify(:task_started, task)
