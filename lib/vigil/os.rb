@@ -5,6 +5,7 @@ class Vigil
     def system(cmd)
       Vigil.logger.info "$ #{cmd}"
       stat = super cmd
+      Vigil.logger.info "Exitstatus: #{stat} #{$?.inspect}"
       unless stat
         block_given? ? yield($?) : raise("Failed")
       end
@@ -14,6 +15,7 @@ class Vigil
     def backticks(cmd)
       Vigil.logger.info "$ #{cmd}"
       output = `#{cmd}`
+      Vigil.logger.info "Exitstatus: #{$?.inspect}"
       raise "Failed: #{$?.exitstatus}" if $?.exitstatus != 0
       output
     end

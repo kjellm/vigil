@@ -3,9 +3,21 @@ class Vigil
 
     def task(desc)
       task_started desc
-      yield
+      out = File.open(File.join(@revision.working_dir, ".vigil_task_#{desc}.log"), 'w')
+      orig_stderr = $stderr.clone
+      orig_stdout = $stdout.clone
+      $stderr.reopen(out)
+      $stdout.reopen(out)
+      begin
+        yield
+      ensure
+        $stderr.reopen(orig_stderr)
+        $stdout.reopen(orig_stdout)
+        out.close
+      end
       task_done desc
     end
+
 
     def task_started(task)
       notify(:task_started, task)
