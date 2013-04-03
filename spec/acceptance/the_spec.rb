@@ -1,6 +1,10 @@
 require 'spec_helper'
 require 'tempfile'
 require 'fileutils'
+require 'fileutils'
+
+Vigil.logger = Logger.new(File.join(File.dirname(__FILE__), '../../tmp/acceptance.log'))
+FileUtils.mkdir_p File.join(File.dirname(__FILE__), '../../tmp/')
 
 describe "Vigil" do
 
@@ -44,7 +48,7 @@ EOF
     cwd = Dir.pwd
     in_test_project do |rcfile, run_dir, _|
       begin
-        v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile, logger: Logger.new(File.join(File.dirname(__FILE__), '../../tmp/acceptance.log')))
+        v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile)
         v.run
         Dir.entries(File.join(run_dir, 'test')).should include('1', 'repo.git')
         Dir.entries(File.join(run_dir, 'test', 'repo.git')).should include('objects') #FIXME isa git repo
@@ -60,11 +64,10 @@ EOF
       cwd = Dir.pwd
       in_test_project do |rcfile, run_dir, _|
         begin
-          v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile, logger: Logger.new(File.join(File.dirname(__FILE__), '../../tmp/acceptance.log')))
+          v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile)
           v.run
           v.run
           
-          p Dir.pwd
           Dir.entries(File.join(run_dir, 'test')).should_not include('2')
         ensure
           Dir.chdir(cwd) # FIXME should not need to reset cwd here
@@ -78,7 +81,7 @@ EOF
       cwd = Dir.pwd
       in_test_project do |rcfile, run_dir, test_repo_dir|
         begin
-          v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile, logger: Logger.new(File.join(File.dirname(__FILE__), '../../tmp/acceptance.log')))
+          v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile)
           v.run
 
           File.write(File.join(test_repo_dir, 'README.md'), "Hello World!\n")
@@ -86,6 +89,7 @@ EOF
           git.cmd('commit -m "commit message goes here"')
           v.run
       
+          system "cat #{File.join(run_dir, 'test', '1')}/.*.log"
           Dir.entries(File.join(run_dir, 'test')).should include('1', '2', 'repo.git')
           Dir.entries(File.join(run_dir, 'test', '2')).should include('Rakefile', 'README.md')
         ensure
