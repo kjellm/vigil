@@ -11,7 +11,7 @@ require 'vigil'
 
 class Vigil
   module Task
-    def _redirected
+    def _redirected(desc)
       yield
     end
   end

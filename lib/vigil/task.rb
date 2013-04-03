@@ -3,12 +3,12 @@ class Vigil
 
     def task(desc, &block)
       task_started desc
-      _redirected(&block)
+      _redirected(desc, &block)
       task_done desc
     end
 
     
-    def _redirected
+    def _redirected(desc)
       out = File.open(File.join(@revision.working_dir, ".vigil_task_#{desc}.log"), 'w')
       orig_stderr = $stderr.clone
       orig_stdout = $stdout.clone
