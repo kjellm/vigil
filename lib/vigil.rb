@@ -36,6 +36,7 @@ class Vigil
     Vigil.os = args[:os] if args[:os]
     Vigil.run_dir = @config[:run_dir] if @config[:run_dir]
     Vigil.plugman = Plugman.new(logger: Vigil.logger, loader: Plugman::ConfigLoader.new(@config['plugins']))
+    Vigil.logger = args[:logger] if args[:logger]
     @project_repository = ProjectRepository.new(@config)
     @os = Vigil.os
     @loop = args[:loop] || Poll.new(60)

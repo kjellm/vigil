@@ -44,7 +44,7 @@ EOF
     cwd = Dir.pwd
     in_test_project do |rcfile, run_dir, _|
       begin
-        v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile)
+        v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile, logger: Logger.new(File.join(File.dirname(__FILE__), '../../tmp/acceptance.log')))
         v.run
         Dir.entries(File.join(run_dir, 'test')).should include('1', 'repo.git')
         Dir.entries(File.join(run_dir, 'test', 'repo.git')).should include('objects') #FIXME isa git repo
@@ -60,7 +60,7 @@ EOF
       cwd = Dir.pwd
       in_test_project do |rcfile, run_dir, _|
         begin
-          v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile)
+          v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile, logger: Logger.new(File.join(File.dirname(__FILE__), '../../tmp/acceptance.log')))
           v.run
           v.run
           
@@ -78,7 +78,7 @@ EOF
       cwd = Dir.pwd
       in_test_project do |rcfile, run_dir, test_repo_dir|
         begin
-          v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile)
+          v = Vigil.new(loop: ->(&b){b.call}, rcfile: rcfile, logger: Logger.new(File.join(File.dirname(__FILE__), '../../tmp/acceptance.log')))
           v.run
 
           File.write(File.join(test_repo_dir, 'README.md'), "Hello World!\n")
