@@ -3,8 +3,8 @@ require 'tempfile'
 require 'fileutils'
 require 'fileutils'
 
+Dir.mkdir File.join(File.dirname(__FILE__), '../../tmp/')
 Vigil.logger = Logger.new(File.join(File.dirname(__FILE__), '../../tmp/acceptance.log'))
-FileUtils.mkdir_p File.join(File.dirname(__FILE__), '../../tmp/')
 
 describe "Vigil" do
 
