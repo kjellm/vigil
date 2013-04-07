@@ -92,7 +92,7 @@ class Vigil
       @os.should_receive('system').with("vagrant basebox validate 'znork'").ordered
       @os.should_receive('system').with("vagrant basebox export 'znork'").ordered
       @os.should_receive('rename').with("znork.box", "/run/znork/boxes/znork-1.box").ordered
-      @os.should_receive('system').with("vagrant basebox destroy znork").ordered
+      @os.should_receive('system').with("vagrant basebox destroy 'znork'").ordered
     end
   
     def no_gems_box_expectations
@@ -100,7 +100,7 @@ class Vigil
       @os.should_receive('system').with(%Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1\\"")' Vagrantfile}).ordered
       @os.should_receive('system').with("vagrant up").ordered
       @os.should_receive('system').with("vagrant package --output /run/znork/boxes/znork-1_no_gems.pkg").ordered
-      @os.should_receive('system').with("vagrant box remove znork-1").ordered
+      @os.should_receive('system').with("vagrant box remove 'znork-1'").ordered
     end
   
     def complete_box_expectations

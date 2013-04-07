@@ -8,6 +8,7 @@ class Vigil
       @vmbuilder = args[:vmbuilder] || VMBuilder.new(@revision)
       @plugman = Vigil.plugman
       @git = Git.new
+      @vagrant = args[:vagrant] || Vagrant.new
     end
     
     def run
@@ -19,13 +20,13 @@ class Vigil
     end
   
     def _start_vm
-      Vagrant.run "box add --force '#{@revision.complete_box_name}' '#{@revision.complete_box_path}'"
-      Vagrant.use @revision.complete_box_name
-      Vagrant.run "up"
+      @vagrant.add_box(@revision.complete_box_name, @revision.complete_box_path)
+      @vagrant.use(@revision.complete_box_name)
+      @vagrant.up
     end
   
     def _run_tests
-      Vagrant.run "ssh -c 'cd /vagrant; rake test'"
+      @vagrant.ssh('cd /vagrant; rake test')
     end
 
   end
