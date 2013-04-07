@@ -5,6 +5,7 @@ class Vigil
   describe VMBuilder do
 
     before :each do
+      VMBuilder.any_instance.stub(:_redirected) {|&block| block.call }
       Revision.any_instance.stub(sha: 'the_sha')
       @os = double('os')
       Vigil.os = @os
