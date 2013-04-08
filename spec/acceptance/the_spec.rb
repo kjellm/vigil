@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'tempfile'
 require 'fileutils'
 
-FileUtils.mkdir_p File.join(File.dirname(__FILE__), '../../tmp/')
 Vigil.logger = Logger.new(File.join(File.dirname(__FILE__), '../../tmp/acceptance.log'))
 
 describe "Vigil" do

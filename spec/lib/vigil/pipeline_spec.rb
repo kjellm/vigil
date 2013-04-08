@@ -5,6 +5,7 @@ class Vigil
 
     describe "#run" do
       it "clones the repository, runs the VMBuilder, starts the VM, and runs tests" do
+        Pipeline.any_instance.stub(:_redirected) {|&block| block.call }
         @os = double('os')
         Vigil.os = @os
         Vigil.run_dir = "/run"
