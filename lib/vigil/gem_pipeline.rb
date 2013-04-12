@@ -8,11 +8,19 @@ class Vigil
       include Singleton
     
       attr_reader :system
-    
-      def initialize()
+      attr_reader :plugman
+
+      def initialize
         @system = System.new
+        @plugman = Vigil.plugman
       end
     
+    end
+
+    class Session
+      include Singleton
+    
+      attr_accessor :revision
     end
     
     class CommandResult
@@ -43,27 +51,53 @@ class Vigil
     
     class Task
     
-      def initialize(env=Environment.instance)
+      def initialize(env=Environment.instance, session = Session.instance)
         @env = env
+        @session = session
       end
     
       def call
-        result = @env.system.run_command(command)
-        return OpenStruct.new(status: result.status, command: command, result: result)
+        task_started
+        log = []
+        res = Class.new {def self.status; true; end}
+        commands.each do |cmd|
+          if res.status
+            res = @env.system.run_command(cmd)
+            log << OpenStruct.new(command: cmd, result: res)
+          end
+        end
+        task_done
+        return OpenStruct.new(name: name, status: res.status, log: log)
       end
     
       private
     
-      def command; raise "Abstract method called"; end
+      def commands; raise "Abstract method called"; end
+      def name; raise "Abstract method called"; end
     
+      def task_started
+        notify(:task_started, name)
+      end
+
+      def task_done
+        notify(:task_done, name)
+      end
+
+      def notify(msg, *args)
+        @env.plugman.notify(msg, @session.revision.project_name, *args)
+      end
     end
-    
+
     class InstallGemsTask < Task
     
       private
     
-      def command
-        %w(bundle install)
+      def name
+        'Bundler'
+      end
+
+      def commands
+        [%w(bundle install)]
       end
     
     end
@@ -72,8 +106,12 @@ class Vigil
     
       private
     
-      def command
-        %w(bundle exec rake)
+      def name
+        'Tests'
+      end
+
+      def commands
+        [%w(bundle exec rake)]
       end
     
     end
@@ -91,7 +129,8 @@ class Vigil
     
     end
   
-    def initialize(*args)
+    def initialize(revision)
+      Session.instance.revision = revision
     end
 
     def run

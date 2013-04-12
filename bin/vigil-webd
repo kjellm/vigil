@@ -44,6 +44,7 @@ class WebServer < Reel::Server
   def initialize(host = "0.0.0.0", port = 1236)
     info "Web server starting on #{host}:#{port}"
     @vigil = Vigil.new
+    @config = Vigil::Config.new
     super(host, port, &method(:on_connection))
   end
 
