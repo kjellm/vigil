@@ -16,7 +16,11 @@ class Vigil
       _git_clone
       @os.mkdir_p @run_dir_boxes
       pipeline = @project.type == 'gem' ? GemPipeline : Pipeline
-      pipeline.new(self).run
+      @os.chdir working_dir
+      report = pipeline.new(self).run
+      File.open( '.vigil.log', 'w' ) do |out|
+        YAML.dump(report, out)
+      end
     end
 
     def _git_clone

@@ -12,7 +12,6 @@ class Vigil
     end
     
     def run
-      @os.chdir @revision.working_dir
       notify(:build_started)
       @vmbuilder.run
       task('boot_vm') { _start_vm }
