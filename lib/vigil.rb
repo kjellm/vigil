@@ -1,19 +1,9 @@
-require 'vigil/task'
-
 require 'plugman'
-require 'vigil/config'
-require 'vigil/gem_pipeline'
-require 'vigil/git'
-require 'vigil/os'
-require 'vigil/pipeline'
-require 'vigil/poll'
-require 'vigil/project'
-require 'vigil/project_repository'
-require 'vigil/revision'
-require 'vigil/revision_repository'
-require 'vigil/test_pipeline'
-require 'vigil/vagrant'
-require 'vigil/vmbuilder'
+
+Dir[File.join(File.dirname(__FILE__), 'vigil/**/*.rb')].each do |file| 
+  dir = File.dirname(file)[File.dirname(__FILE__).length+1..-1]
+  require_relative File.join(dir, File.basename(file, File.extname(file)))
+end
 
 class Vigil
   
