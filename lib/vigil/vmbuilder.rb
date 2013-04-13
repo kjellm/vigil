@@ -8,7 +8,6 @@ class Vigil
       @plugman = Vigil.plugman
       @revision = revision
       @previous_revision = @revision.previous
-      @rebuild = false
       @git = Git.new
       @vagrant = Vagrant.new
       Session.instance.revision = @revision
@@ -30,20 +29,19 @@ class Vigil
     end
 
     def _build_vm
-      _setup_basebox
-      _setup_no_gems_box
-      _setup_complete_box
-      @rebuild = false
+      tasks = _setup_basebox
+      tasks = _setup_no_gems_box if tasks.empty?
+      tasks = _setup_complete_box if tasks.empty?
+      tasks.each {|t| t.call }
     end
     
     def _setup_basebox
-      return if @x.exists? @revision.base_box_path
+      return [] if @x.exists? @revision.base_box_path
       if @x.exists?(@previous_revision.base_box_path) and !_changes_relative_to_previous_revision_in?('definitions')
-        _use_old_box(:base_box_path)
-        task_done('VM1')
+        _use_old_box(:base_box_path, 'VM1')
+        return []
       else
-        @basebox_task.call
-        @rebuild = true
+        return [@basebox_task, @no_gems_box_task, @complete_box_task]
       end
     end
 
@@ -52,29 +50,29 @@ class Vigil
     end  
 
     def _setup_no_gems_box
-      return if @x.exists?(@revision.no_gems_box_path)
-      if @rebuild or !@x.exists?(@previous_revision.no_gems_box_path) or
+      return [] if @x.exists?(@revision.no_gems_box_path)
+      if !@x.exists?(@previous_revision.no_gems_box_path) or
           _changes_relative_to_previous_revision_in?('manifests')
-        @no_gems_box_task.call
-        @rebuild = true
+        return [@no_gems_box_task, @complete_box_task]
       else
-        _use_old_box :no_gems_box_path
-        task_done('VM2')
+        _use_old_box :no_gems_box_path, 'VM2'
+        return []
       end
     end
 
     def _setup_complete_box
-      if @rebuild or !@x.exists?(@previous_revision.complete_box_path) or
+      if !@x.exists?(@previous_revision.complete_box_path) or
           _changes_relative_to_previous_revision_in?('Gemfile*')
-        @complete_box_task.call
+        return [@complete_box_task]
       else
-        _use_old_box :complete_box_path
-        task_done('VM3')
+        _use_old_box :complete_box_path, 'VM3'
+        return []
       end
     end
 
-    def _use_old_box(box)
+    def _use_old_box(box, name)
       @x.ln @previous_revision.send(box), @revision.send(box)
+      task_done name
     end
 
     def _changes_relative_to_previous_revision_in?(files)
