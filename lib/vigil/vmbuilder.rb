@@ -46,6 +46,7 @@ class Vigil
     end
 
     def _setup_iso_cache
+      @x.mkdir_p File.join(Vigil.run_dir, 'iso')
       @x.system "ln -sf #{File.join(Vigil.run_dir, 'iso')}"
     end  
 

@@ -12,6 +12,7 @@ class Vigil
       Vigil.plugman = double('plugman').as_null_object
       @sys = double('system')
       Environment.instance.system = @sys
+      @os.should_receive('mkdir_p').with("/run/iso").ordered
       @os.should_receive('system').with("ln -sf /run/iso").ordered
     end
   
