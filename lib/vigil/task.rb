@@ -1,38 +1,45 @@
+require 'ostruct'
+
 class Vigil
-  module Task
-
-    def task(desc, &block)
-      task_started desc
-      _redirected(desc, &block)
-      task_done desc
-    end
-
+  class Task
     
-    def _redirected(desc)
-      out = File.open(File.join(@revision.working_dir, ".vigil_task_#{desc}.log"), 'w')
-      orig_stderr = $stderr.clone
-      orig_stdout = $stdout.clone
-      $stderr.reopen(out)
-      $stdout.reopen(out)
-      begin
-        yield
-      ensure
-        $stderr.reopen(orig_stderr)
-        $stdout.reopen(orig_stdout)
-        out.close
+    def initialize(args={})
+      @env = args[:env] || Environment.instance
+      @session = args[:session] || Session.instance
+      post_initialize(args)
+    end
+    
+    def call
+      task_started
+      log = []
+      res = Class.new {def self.status; true; end}
+      commands.each do |cmd|
+        if res.status
+          res = @env.system.run_command(cmd)
+          log << OpenStruct.new(command: cmd, result: res)
+        end
       end
+      task_done
+      return OpenStruct.new(name: name, status: res.status, log: log)
+    end
+    
+    private
+    
+    def post_initialize(args); end
+    
+    def commands; raise "Abstract method called"; end
+    def name; raise "Abstract method called"; end
+    
+    def task_started
+      notify(:task_started, name)
     end
 
-    def task_started(task)
-      notify(:task_started, task)
-    end
-
-    def task_done(task)
-      notify(:task_done, task)
+    def task_done
+      notify(:task_done, name)
     end
 
     def notify(msg, *args)
-      @plugman.notify(msg, @revision.project_name, *args)
+      @env.plugman.notify(msg, @session.revision.project_name, *args)
     end
 
   end

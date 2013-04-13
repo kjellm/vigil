@@ -11,6 +11,8 @@ class Vigil
       Vigil.os = @os
       Vigil.run_dir = "/run"
       Vigil.plugman = double('plugman').as_null_object
+      @sys = double('system')
+      Environment.instance.system = @sys
     end
   
     after :each do
@@ -88,12 +90,13 @@ class Vigil
     end
   
     def basebox_expectations
+      ret = double('res', status: true)
       @os.should_receive('system').with("ln -sf /run/iso").ordered
-      @os.should_receive('system').with("vagrant basebox build --force --nogui 'znork'").ordered
-      @os.should_receive('system').with("vagrant basebox validate 'znork'").ordered
-      @os.should_receive('system').with("vagrant basebox export 'znork'").ordered
-      @os.should_receive('rename').with("znork.box", "/run/znork/boxes/znork-1.box").ordered
-      @os.should_receive('system').with("vagrant basebox destroy 'znork'").ordered
+      @sys.should_receive('run_command').with("vagrant basebox build --force --nogui 'znork'").ordered.and_return(ret)
+      @sys.should_receive('run_command').with("vagrant basebox validate 'znork'").ordered.and_return(ret)
+      @sys.should_receive('run_command').with("vagrant basebox export 'znork'").ordered.and_return(ret)
+      @sys.should_receive('run_command').with("mv znork.box /run/znork/boxes/znork-1.box").ordered.and_return(ret)
+      @sys.should_receive('run_command').with("vagrant basebox destroy 'znork'").ordered.and_return(ret)
     end
   
     def no_gems_box_expectations

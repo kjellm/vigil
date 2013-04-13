@@ -42,11 +42,11 @@ class Vigil
     end
 
     def run(cmd)
-      Vigil.os.system "vagrant #{cmd}"
+      "vagrant #{cmd}"
     end
 
     def use(box)
-      Vigil.os.system %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{box}\\"")' Vagrantfile}
+      %Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"#{box}\\"")' Vagrantfile}
     end
 
   end
