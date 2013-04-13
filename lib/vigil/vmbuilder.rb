@@ -3,77 +3,6 @@ require 'vigil/task'
 class Vigil
   class VMBuilder
 
-    class BaseboxTask < Task
-      
-      private
-
-      def post_initialize(args)
-        @revision = args.fetch(:revision)
-      end
-
-      def name; 'VM1'; end
-
-      def commands
-        vagrant = Vagrant.new
-        [
-          vagrant.build_basebox(@revision.project_name),
-          vagrant.validate_basebox(@revision.project_name),
-          vagrant.export_basebox(@revision.project_name),
-          ['mv', "#{@revision.project_name}.box", @revision.base_box_path],
-          vagrant.destroy_basebox(@revision.project_name),
-        ]
-      end
-
-    end
-
-    class NoGemsBoxTask < Task
-
-      private
-
-      def post_initialize(args)
-        @revision = args.fetch(:revision)
-      end
-
-      def name; 'VM2'; end
-
-      def commands
-        vagrant = Vagrant.new
-        [
-         vagrant.add_box(@revision.base_box_name, @revision.base_box_path),
-         vagrant.use(@revision.base_box_name),
-         vagrant.up,
-         vagrant.package(@revision.no_gems_box_path),
-         vagrant.remove_box(@revision.base_box_name),
-        ]
-      end
-      
-    end
-
-    class CompleteBoxTask < Task
-
-      private
-
-      def post_initialize(args)
-        @revision = args.fetch(:revision)
-      end
-
-      def name; 'VM3'; end
-
-      def commands
-        vagrant = Vagrant.new
-        [
-         vagrant.add_box(@revision.no_gems_box_name, @revision.no_gems_box_path),
-         vagrant.use(@revision.no_gems_box_name),
-         vagrant.up,
-         vagrant.ssh('sudo gem install bundler'),
-         vagrant.ssh('cd /vagrant/; bundle install'),
-         vagrant.package(@revision.complete_box_path),
-         vagrant.remove_box(@revision.no_gems_box_name),
-        ]
-      end
-      
-    end
-
     def initialize(revision)
       @x = Vigil.os
       @plugman = Vigil.plugman
@@ -83,9 +12,14 @@ class Vigil
       @git = Git.new
       @vagrant = Vagrant.new
       Session.instance.revision = @revision
+
+      @basebox_task = BaseboxTask.new(revision: @revision)
+      @no_gems_box_task = NoGemsBoxTask.new(revision: @revision)
+      @complete_box_task = CompleteBoxTask.new(revision: @revision)
     end
 
     def run
+      _setup_iso_cache
       if @x.exists?(@revision.complete_box_path)
         task_done 'VM1'
         task_done 'VM2'
@@ -108,8 +42,7 @@ class Vigil
         _use_old_box(:base_box_path)
         task_done('VM1')
       else
-        _setup_iso_cache
-        BaseboxTask.new(revision: @revision).call
+        @basebox_task.call
         @rebuild = true
       end
     end
@@ -122,7 +55,7 @@ class Vigil
       return if @x.exists?(@revision.no_gems_box_path)
       if @rebuild or !@x.exists?(@previous_revision.no_gems_box_path) or
           _changes_relative_to_previous_revision_in?('manifests')
-        NoGemsBoxTask.new(revision: @revision).call
+        @no_gems_box_task.call
         @rebuild = true
       else
         _use_old_box :no_gems_box_path
@@ -133,14 +66,11 @@ class Vigil
     def _setup_complete_box
       if @rebuild or !@x.exists?(@previous_revision.complete_box_path) or
           _changes_relative_to_previous_revision_in?('Gemfile*')
-        CompleteBoxTask.new(revision: @revision).call
+        @complete_box_task.call
       else
         _use_old_box :complete_box_path
         task_done('VM3')
       end
-    end
-
-    def _build_complete_box
     end
 
     def _use_old_box(box)
@@ -152,11 +82,7 @@ class Vigil
     end
 
     def task_done(task)
-      notify(:task_done, task)
-    end
-
-    def notify(msg, *args)
-      @plugman.notify(msg, @revision.project_name, *args)
+      @plugman.notify(:task_done, @revision.project_name, task)
     end
 
   end

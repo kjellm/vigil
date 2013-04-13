@@ -12,6 +12,7 @@ class Vigil
       Vigil.plugman = double('plugman').as_null_object
       @sys = double('system')
       Environment.instance.system = @sys
+      @os.should_receive('system').with("ln -sf /run/iso").ordered
     end
   
     after :each do
@@ -90,7 +91,6 @@ class Vigil
   
     def basebox_expectations
       ret = double('res', status: true)
-      @os.should_receive('system').with("ln -sf /run/iso").ordered
       @sys.should_receive('run_command').with(%w(vagrant basebox build --force --nogui znork)).ordered.and_return(ret)
       @sys.should_receive('run_command').with(%w(vagrant basebox validate znork)).ordered.and_return(ret)
       @sys.should_receive('run_command').with(%w(vagrant basebox export znork)).ordered.and_return(ret)
