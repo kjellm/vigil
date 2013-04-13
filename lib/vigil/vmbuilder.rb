@@ -26,6 +26,29 @@ class Vigil
 
     end
 
+    class NoGemsBoxTask < Task
+
+      private
+
+      def post_initialize(args)
+        @revision = args.fetch(:revision)
+      end
+
+      def name; 'VM2'; end
+
+      def commands
+        vagrant = Vagrant.new
+        [
+         vagrant.add_box(@revision.base_box_name, @revision.base_box_path),
+         vagrant.use(@revision.base_box_name),
+         vagrant.up,
+         vagrant.package(@revision.no_gems_box_path),
+         vagrant.remove_box(@revision.base_box_name),
+        ]
+    end
+
+    end
+
     def initialize(revision)
       @x = Vigil.os
       @plugman = Vigil.plugman
@@ -49,7 +72,7 @@ class Vigil
 
     def _build_vm
       _setup_basebox
-      task('VM2') { _setup_no_gems_box }
+      _setup_no_gems_box
       task('VM3') { _setup_complete_box }
       @rebuild = false
     end
@@ -74,19 +97,12 @@ class Vigil
       return if @x.exists?(@revision.no_gems_box_path)
       if @rebuild or !@x.exists?(@previous_revision.no_gems_box_path) or
           _changes_relative_to_previous_revision_in?('manifests')
-        _build_no_gems_box
+        NoGemsBoxTask.new(revision: @revision).call
         @rebuild = true
       else
         _use_old_box :no_gems_box_path
+        task_done('VM1')
       end
-    end
-
-    def _build_no_gems_box
-      @x.system @vagrant.add_box(@revision.base_box_name, @revision.base_box_path)
-      @x.system @vagrant.use @revision.base_box_name
-      @x.system @vagrant.up
-      @x.system @vagrant.package(@revision.no_gems_box_path)
-      @x.system @vagrant.remove_box(@revision.base_box_name)
     end
 
     def _setup_complete_box

@@ -100,11 +100,12 @@ class Vigil
     end
   
     def no_gems_box_expectations
-      @os.should_receive('system').with("vagrant box add --force 'znork-1' '/run/znork/boxes/znork-1.box'").ordered
-      @os.should_receive('system').with(%Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1\\"")' Vagrantfile}).ordered
-      @os.should_receive('system').with("vagrant up").ordered
-      @os.should_receive('system').with("vagrant package --output /run/znork/boxes/znork-1_no_gems.pkg").ordered
-      @os.should_receive('system').with("vagrant box remove 'znork-1'").ordered
+      ret = double('res', status: true)
+      @sys.should_receive('run_command').with("vagrant box add --force 'znork-1' '/run/znork/boxes/znork-1.box'").ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1\\"")' Vagrantfile}).ordered.and_return(ret)
+      @sys.should_receive('run_command').with("vagrant up").ordered.and_return(ret)
+      @sys.should_receive('run_command').with("vagrant package --output /run/znork/boxes/znork-1_no_gems.pkg").ordered.and_return(ret)
+      @sys.should_receive('run_command').with("vagrant box remove 'znork-1'").ordered.and_return(ret)
     end
   
     def complete_box_expectations
