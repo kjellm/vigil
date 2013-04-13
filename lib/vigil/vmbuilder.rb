@@ -19,7 +19,7 @@ class Vigil
           vagrant.build_basebox(@revision.project_name),
           vagrant.validate_basebox(@revision.project_name),
           vagrant.export_basebox(@revision.project_name),
-          "mv #{@revision.project_name}.box #{@revision.base_box_path}",
+          ['mv', "#{@revision.project_name}.box", @revision.base_box_path],
           vagrant.destroy_basebox(@revision.project_name),
         ]
       end
@@ -45,8 +45,33 @@ class Vigil
          vagrant.package(@revision.no_gems_box_path),
          vagrant.remove_box(@revision.base_box_name),
         ]
+      end
+      
     end
 
+    class CompleteBoxTask < Task
+
+      private
+
+      def post_initialize(args)
+        @revision = args.fetch(:revision)
+      end
+
+      def name; 'VM3'; end
+
+      def commands
+        vagrant = Vagrant.new
+        [
+         vagrant.add_box(@revision.no_gems_box_name, @revision.no_gems_box_path),
+         vagrant.use(@revision.no_gems_box_name),
+         vagrant.up,
+         vagrant.ssh('sudo gem install bundler'),
+         vagrant.ssh('cd /vagrant/; bundle install'),
+         vagrant.package(@revision.complete_box_path),
+         vagrant.remove_box(@revision.no_gems_box_name),
+        ]
+      end
+      
     end
 
     def initialize(revision)
@@ -73,7 +98,7 @@ class Vigil
     def _build_vm
       _setup_basebox
       _setup_no_gems_box
-      task('VM3') { _setup_complete_box }
+      _setup_complete_box
       @rebuild = false
     end
     
@@ -101,27 +126,21 @@ class Vigil
         @rebuild = true
       else
         _use_old_box :no_gems_box_path
-        task_done('VM1')
+        task_done('VM2')
       end
     end
 
     def _setup_complete_box
       if @rebuild or !@x.exists?(@previous_revision.complete_box_path) or
           _changes_relative_to_previous_revision_in?('Gemfile*')
-        _build_complete_box
+        CompleteBoxTask.new(revision: @revision).call
       else
         _use_old_box :complete_box_path
+        task_done('VM3')
       end
     end
 
     def _build_complete_box
-      @x.system @vagrant.add_box(@revision.no_gems_box_name, @revision.no_gems_box_path)
-      @x.system @vagrant.use(@revision.no_gems_box_name)
-      @x.system @vagrant.up
-      @x.system @vagrant.ssh('sudo gem install bundler')
-      @x.system @vagrant.ssh('cd /vagrant/; bundle install')
-      @x.system @vagrant.package(@revision.complete_box_path)
-      @x.system @vagrant.remove_box(@revision.no_gems_box_name)
     end
 
     def _use_old_box(box)
@@ -130,32 +149,6 @@ class Vigil
 
     def _changes_relative_to_previous_revision_in?(files)
       @git.differs?(@previous_revision.sha, files)
-    end
-
-    def task(desc, &block)
-      task_started desc
-      _redirected(desc, &block)
-      task_done desc
-    end
-
-    
-    def _redirected(desc)
-      out = File.open(File.join(@revision.working_dir, ".vigil_task_#{desc}.log"), 'w')
-      orig_stderr = $stderr.clone
-      orig_stdout = $stdout.clone
-      $stderr.reopen(out)
-      $stdout.reopen(out)
-      begin
-        yield
-      ensure
-        $stderr.reopen(orig_stderr)
-        $stdout.reopen(orig_stdout)
-        out.close
-      end
-    end
-
-    def task_started(task)
-      notify(:task_started, task)
     end
 
     def task_done(task)
