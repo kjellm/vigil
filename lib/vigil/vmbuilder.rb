@@ -1,3 +1,5 @@
+require 'vigil/task'
+
 class Vigil
   class VMBuilder
 
