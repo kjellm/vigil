@@ -21,13 +21,13 @@ class Vigil
     end
   
     def start_complete_box_expectations
-      @os.should_receive('system').with("vagrant box add --force 'znork-1_complete' '/run/znork/boxes/znork-1_complete.pkg'").ordered
-      @os.should_receive('system').with(%Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1_complete\\"")' Vagrantfile}).ordered
-      @os.should_receive('system').with("vagrant up").ordered
+      @os.should_receive('system').with(*%w(vagrant box add --force znork-1_complete /run/znork/boxes/znork-1_complete.pkg)).ordered
+      @os.should_receive('system').with(*['ruby', '-pi', '-e', %Q{sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1_complete\\"")}, 'Vagrantfile']).ordered
+      @os.should_receive('system').with(*%w(vagrant up)).ordered
     end
   
     def run_tests_expectation
-      @os.should_receive('system').with("vagrant ssh -c 'cd /vagrant; rake test'").ordered
+      @os.should_receive('system').with(*['vagrant', 'ssh', '-c', 'cd /vagrant; rake test']).ordered
     end
   end
 end

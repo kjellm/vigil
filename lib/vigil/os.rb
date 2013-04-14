@@ -2,9 +2,9 @@ require 'fileutils'
 class Vigil
   class OS
   
-    def system(cmd)
+    def system(*cmd)
       Vigil.logger.info "$ #{cmd}"
-      stat = super cmd
+      stat = super *cmd
       Vigil.logger.info "Exitstatus: #{stat} #{$?.inspect}"
       unless stat
         block_given? ? yield($?) : raise("Failed")

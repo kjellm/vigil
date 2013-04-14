@@ -5,7 +5,6 @@ class Vigil
   describe VMBuilder do
 
     before :each do
-      VMBuilder.any_instance.stub(:_redirected) {|&block| block.call }
       Revision.any_instance.stub(sha: 'the_sha')
       @os = double('os')
       Vigil.os = @os
@@ -13,6 +12,8 @@ class Vigil
       Vigil.plugman = double('plugman').as_null_object
       @sys = double('system')
       Environment.instance.system = @sys
+      @os.should_receive('mkdir_p').with("/run/iso").ordered
+      @os.should_receive('system').with("ln -sf /run/iso").ordered
     end
   
     after :each do
@@ -91,40 +92,32 @@ class Vigil
   
     def basebox_expectations
       ret = double('res', status: true)
-      @os.should_receive('system').with("ln -sf /run/iso").ordered
-      @sys.should_receive('run_command').with("vagrant basebox build --force --nogui 'znork'").ordered.and_return(ret)
-      @sys.should_receive('run_command').with("vagrant basebox validate 'znork'").ordered.and_return(ret)
-      @sys.should_receive('run_command').with("vagrant basebox export 'znork'").ordered.and_return(ret)
-      @sys.should_receive('run_command').with("mv znork.box /run/znork/boxes/znork-1.box").ordered.and_return(ret)
-      @sys.should_receive('run_command').with("vagrant basebox destroy 'znork'").ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant basebox build --force --nogui znork)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant basebox validate znork)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant basebox export znork)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(mv znork.box /run/znork/boxes/znork-1.box)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant basebox destroy znork)).ordered.and_return(ret)
     end
   
     def no_gems_box_expectations
-      @os.should_receive('system').with("vagrant box add --force 'znork-1' '/run/znork/boxes/znork-1.box'").ordered
-      @os.should_receive('system').with(%Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1\\"")' Vagrantfile}).ordered
-      @os.should_receive('system').with("vagrant up").ordered
-      @os.should_receive('system').with("vagrant package --output /run/znork/boxes/znork-1_no_gems.pkg").ordered
-      @os.should_receive('system').with("vagrant box remove 'znork-1'").ordered
+      ret = double('res', status: true)
+      @sys.should_receive('run_command').with(%w(vagrant box add --force znork-1 /run/znork/boxes/znork-1.box)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(['ruby', '-pi', '-e', %Q{sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1\\"")}, 'Vagrantfile']).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant up)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant package --output /run/znork/boxes/znork-1_no_gems.pkg)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant box remove znork-1)).ordered.and_return(ret)
     end
   
     def complete_box_expectations
-      @os.should_receive('system').with("vagrant box add --force 'znork-1_no_gems' '/run/znork/boxes/znork-1_no_gems.pkg'").ordered
-      @os.should_receive('system').with(%Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1_no_gems\\"")' Vagrantfile}).ordered
-      @os.should_receive('system').with("vagrant up").ordered
-      @os.should_receive('system').with("vagrant ssh -c 'sudo gem install bundler'").ordered
-      @os.should_receive('system').with("vagrant ssh -c 'cd /vagrant/; bundle install'").ordered
-      @os.should_receive('system').with("vagrant package --output /run/znork/boxes/znork-1_complete.pkg").ordered
-      @os.should_receive('system').with("vagrant box remove 'znork-1_no_gems'").ordered
+      ret = double('res', status: true)
+      @sys.should_receive('run_command').with(%w(vagrant box add --force znork-1_no_gems /run/znork/boxes/znork-1_no_gems.pkg)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(['ruby', '-pi', '-e', %Q{sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1_no_gems\\"")}, 'Vagrantfile']).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant up)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(['vagrant', 'ssh', '-c', 'sudo gem install bundler']).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(['vagrant', 'ssh', '-c', 'cd /vagrant/; bundle install']).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant package --output /run/znork/boxes/znork-1_complete.pkg)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant box remove znork-1_no_gems)).ordered.and_return(ret)
     end
   
-    def start_complete_box_expectations
-      @os.should_receive('system').with("vagrant box add --force 'znork-1_complete' '/run/znork/boxes/znork-1_complete.pkg'").ordered
-      @os.should_receive('system').with(%Q{ruby -pi -e 'sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1_complete\\"")' Vagrantfile}).ordered
-      @os.should_receive('system').with("vagrant up").ordered
-    end
-  
-    def run_tests_expectation
-      @os.should_receive('system').with("vagrant ssh -c 'cd /vagrant; rake test'").ordered
-    end
   end
 end
