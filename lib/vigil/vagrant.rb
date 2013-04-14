@@ -6,7 +6,7 @@ class Vigil
     end
 
     def build_basebox(name)
-      basebox('build', '--force', '--nogui', name)
+      basebox('build', '--force', '--nogui', '--redirect-console', '--auto', name)
     end
 
     def validate_basebox(name)
