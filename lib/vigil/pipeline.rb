@@ -12,7 +12,7 @@ class Vigil
     def run
       notify(:build_started)
       @vmbuilder.run
-      task('boot_vm') { _start_vm }
+      StartVMTask.new(@session, vagrant: @vagrant).call
       task('tests') { _run_tests }
     end
   
