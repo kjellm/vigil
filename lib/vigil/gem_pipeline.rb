@@ -1,9 +1,8 @@
-require 'ostruct'
-
+require 'vigil/pipeline'
 require 'vigil/task'
 
 class Vigil
-  class GemPipeline
+  class GemPipeline < Pipeline
 
     class InstallGemsTask < Task
     
@@ -32,17 +31,9 @@ class Vigil
       end
     
     end
-      
-    def initialize(session)
-      @session = session
-    end
 
-    def run
-      log = []
-      log << res = InstallGemsTask.new(@session).call
-      log << res = TestTask.new(@session).call if res.status
-  
-      return Report.new(res.status, log)
+    def tasks
+      [ InstallGemsTask.new(@session), TestTask.new(@session) ]
     end
   
   end

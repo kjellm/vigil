@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 class Vigil
-  describe Pipeline do
+  describe VMPipeline do
 
     describe "#run" do
       it "clones the repository, runs the VMBuilder, starts the VM, and runs tests" do
@@ -20,7 +20,7 @@ class Vigil
         expect_command(%w(vagrant up))
         expect_command(['vagrant', 'ssh', '-c', 'cd /vagrant; bundle exec rake'])
 
-        Pipeline.new(session, vmbuilder: vmbuilder).run
+        VMPipeline.new(session, vmbuilder: vmbuilder).run
       end
     end
   

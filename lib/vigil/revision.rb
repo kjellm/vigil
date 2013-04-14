@@ -17,7 +17,7 @@ class Vigil
     def run_pipeline(type='default')
       _git_clone
       @os.mkdir_p @run_dir_boxes
-      pipeline = @project.type == 'gem' ? GemPipeline : Pipeline
+      pipeline = @project.type == 'gem' ? GemPipeline : VMPipeline
       @os.chdir working_dir
       session = Session.new(plugman: Vigil.plugman, system: System.new, revision: self)
       report = pipeline.new(session).run
