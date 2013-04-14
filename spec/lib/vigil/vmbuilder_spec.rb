@@ -92,7 +92,7 @@ class Vigil
   
     def basebox_expectations
       ret = double('res', status: true)
-      @sys.should_receive('run_command').with(%w(vagrant basebox build --force --nogui znork)).ordered.and_return(ret)
+      @sys.should_receive('run_command').with(%w(vagrant basebox build --force --nogui --redirect-console --auto znork)).ordered.and_return(ret)
       @sys.should_receive('run_command').with(%w(vagrant basebox validate znork)).ordered.and_return(ret)
       @sys.should_receive('run_command').with(%w(vagrant basebox export znork)).ordered.and_return(ret)
       @sys.should_receive('run_command').with(%w(mv znork.box /run/znork/boxes/znork-1.box)).ordered.and_return(ret)
