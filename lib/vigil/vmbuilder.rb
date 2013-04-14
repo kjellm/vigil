@@ -19,12 +19,6 @@ class Vigil
 
     def run
       _setup_iso_cache
-      if @x.exists?(@revision.complete_box_path)
-        task_done 'VM1'
-        task_done 'VM2'
-        task_done 'VM3'
-        return
-      end
       _build_vm
     end
 
@@ -34,43 +28,52 @@ class Vigil
     end  
 
     def _build_vm
-      tasks = _setup_basebox
+      tasks = _tasks
       log = []
       res = Class.new {def self.status; true; end}
       tasks.each {|t| log << res = t.call if res.status }
     end
+
+    def _tasks
+      # Use NullTasks to notify plugins that a task is done without actually do anything.
+      if @x.exists?(@revision.complete_box_path)
+        [ NullTask.new(name: 'VM1'), NullTask.new(name: 'VM2'), NullTask.new(name: 'VM3') ]
+      else
+        _setup_basebox
+      end
+    end
     
     def _setup_basebox
-      return [] if @x.exists? @revision.base_box_path
-      if @x.exists?(@previous_revision.base_box_path) and !_changes_relative_to_previous_revision_in?('definitions')
-        return [ReuseBoxTask.new(name: 'VM1', box: :base_box_path), *_setup_no_gems_box]
+      name = 'VM1'
+      if @x.exists? @revision.base_box_path
+        [NullTask.new(name: name), *_setup_no_gems_box]
+      elsif @x.exists?(@previous_revision.base_box_path) and !_changes_relative_to_previous_revision_in?('definitions')
+        [ReuseBoxTask.new(name: name, box: :base_box_path), *_setup_no_gems_box]
       else
-        return [@basebox_task, @no_gems_box_task, @complete_box_task]
+        [@basebox_task, @no_gems_box_task, @complete_box_task]
       end
     end
 
     def _setup_no_gems_box
-      return [] if @x.exists?(@revision.no_gems_box_path)
-      if !@x.exists?(@previous_revision.no_gems_box_path) or
+      name = 'VM2'
+      if @x.exists?(@revision.no_gems_box_path)
+        [NullTask.new(name: name), *_setup_complete_box]
+      elsif !@x.exists?(@previous_revision.no_gems_box_path) or
           _changes_relative_to_previous_revision_in?('manifests')
-        return [@no_gems_box_task, @complete_box_task]
+        [@no_gems_box_task, @complete_box_task]
       else
-        return [ReuseBoxTask.new(name: 'VM2', box: :no_gems_box_path), *_setup_complete_box]
+        [ReuseBoxTask.new(name: name, box: :no_gems_box_path), *_setup_complete_box]
       end
     end
 
     def _setup_complete_box
+      name = 'VM3'
       if !@x.exists?(@previous_revision.complete_box_path) or
           _changes_relative_to_previous_revision_in?('Gemfile*')
-        return [@complete_box_task]
+        @complete_box_task
       else
-        return [ReuseBoxTask.new(name: 'VM3', box: :complete_box_path)]
+        ReuseBoxTask.new(name: name, box: :complete_box_path)
       end
-    end
-
-    def _use_old_box(box, name)
-      @x.ln @previous_revision.send(box), @revision.send(box)
-      task_done name
     end
 
     def _changes_relative_to_previous_revision_in?(files)
