@@ -23,7 +23,7 @@ class ruby {
   exec {
     "rvm":
       command => "curl -s -L get.rvm.io | bash -s $rvm_version --autolibs=enabled",
-      Require => Package[$rvm_requirements],
+      require => Package[$rvm_requirements],
       unless  => "test -d $home/.rvm",
   }
 
