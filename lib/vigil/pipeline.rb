@@ -24,7 +24,7 @@ class Vigil
     end
   
     def _run_tests
-      @os.system(*@vagrant.ssh('cd /vagrant; rake test'))
+      @os.system(*@vagrant.ssh('cd /vagrant; rake'))
     end
 
     def task(desc)
