@@ -48,13 +48,14 @@ class Vigil
   
       context "and none of the VM configuration files has changed" do
         it "reuses the VM" do
+          ret = double('res', status: true)
           @os.should_receive('system').with("git diff --quiet the_sha -- definitions").and_return(true)
           @os.should_receive('system').with("git diff --quiet the_sha -- manifests").and_return(true)
           @os.should_receive('system').with("git diff --quiet the_sha -- Gemfile*").and_return(true)
   
-          @os.should_receive('ln').with("/run/znork/boxes/znork-0.box", "/run/znork/boxes/znork-1.box").ordered
-          @os.should_receive('ln').with("/run/znork/boxes/znork-0_no_gems.pkg", "/run/znork/boxes/znork-1_no_gems.pkg").ordered
-          @os.should_receive('ln').with("/run/znork/boxes/znork-0_complete.pkg", "/run/znork/boxes/znork-1_complete.pkg").ordered
+          @sys.should_receive('run_command').with(%w(ln /run/znork/boxes/znork-0.box /run/znork/boxes/znork-1.box)).ordered.and_return(ret)
+          @sys.should_receive('run_command').with(%w(ln /run/znork/boxes/znork-0_no_gems.pkg /run/znork/boxes/znork-1_no_gems.pkg)).ordered.and_return(ret)
+          @sys.should_receive('run_command').with(%w(ln /run/znork/boxes/znork-0_complete.pkg /run/znork/boxes/znork-1_complete.pkg)).ordered.and_return(ret)
         end
       end
   
@@ -69,9 +70,10 @@ class Vigil
   
       context "and only the puppet manifests has changed" do
         it "uses the previous revisions basebox to build the VM" do
+          ret = double('res', status: true)
           @os.should_receive('system').with("git diff --quiet the_sha -- definitions").and_return(true)
           @os.should_receive('system').with("git diff --quiet the_sha -- manifests").and_return(false)
-          @os.should_receive('ln').with("/run/znork/boxes/znork-0.box", "/run/znork/boxes/znork-1.box").ordered
+          @sys.should_receive('run_command').with(%w(ln /run/znork/boxes/znork-0.box /run/znork/boxes/znork-1.box)).ordered.and_return(ret)
           no_gems_box_expectations
           complete_box_expectations
         end
@@ -79,12 +81,12 @@ class Vigil
   
       context "and only Gemfile* has changed" do
         it "uses the previous revisions basebox to build the VM" do
+          ret = double('res', status: true)
           @os.should_receive('system').with("git diff --quiet the_sha -- definitions").and_return(true)
           @os.should_receive('system').with("git diff --quiet the_sha -- manifests").and_return(true)
           @os.should_receive('system').with("git diff --quiet the_sha -- Gemfile*").and_return(false)
-          @os.should_receive('ln').with("/run/znork/boxes/znork-0.box", "/run/znork/boxes/znork-1.box").ordered
-          @os.should_receive('ln').with("/run/znork/boxes/znork-0_no_gems.pkg", "/run/znork/boxes/znork-1_no_gems.pkg").ordered
-   
+          @sys.should_receive('run_command').with(%w(ln /run/znork/boxes/znork-0.box /run/znork/boxes/znork-1.box)).ordered.and_return(ret)
+          @sys.should_receive('run_command').with(%w(ln /run/znork/boxes/znork-0_no_gems.pkg /run/znork/boxes/znork-1_no_gems.pkg)).ordered.and_return(ret)   
           complete_box_expectations
         end
       end

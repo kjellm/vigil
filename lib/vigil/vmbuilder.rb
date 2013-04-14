@@ -3,6 +3,25 @@ require 'vigil/task'
 class Vigil
   class VMBuilder
 
+    class ReuseBoxTask < Task
+
+      private
+
+      def post_initialize(args)
+        @name = args.fetch(:name)
+        @box  = args.fetch(:box)
+      end
+     
+      def name; @name; end
+   
+      def commands
+        s = Session.instance
+        [ ['ln', s.revision.previous.send(@box), s.revision.send(@box) ] ]
+      end
+
+      
+    end
+
     def initialize(revision)
       @x = Vigil.os
       @plugman = Vigil.plugman
@@ -28,10 +47,13 @@ class Vigil
       _build_vm
     end
 
+    def _setup_iso_cache
+      @x.mkdir_p File.join(Vigil.run_dir, 'iso')
+      @x.system "ln -sf #{File.join(Vigil.run_dir, 'iso')}"
+    end  
+
     def _build_vm
       tasks = _setup_basebox
-      tasks = _setup_no_gems_box if tasks.empty?
-      tasks = _setup_complete_box if tasks.empty?
       log = []
       res = Class.new {def self.status; true; end}
       tasks.each {|t| log << res = t.call if res.status }
@@ -40,17 +62,11 @@ class Vigil
     def _setup_basebox
       return [] if @x.exists? @revision.base_box_path
       if @x.exists?(@previous_revision.base_box_path) and !_changes_relative_to_previous_revision_in?('definitions')
-        _use_old_box(:base_box_path, 'VM1')
-        return []
+        return [ReuseBoxTask.new(name: 'VM1', box: :base_box_path), *_setup_no_gems_box]
       else
         return [@basebox_task, @no_gems_box_task, @complete_box_task]
       end
     end
-
-    def _setup_iso_cache
-      @x.mkdir_p File.join(Vigil.run_dir, 'iso')
-      @x.system "ln -sf #{File.join(Vigil.run_dir, 'iso')}"
-    end  
 
     def _setup_no_gems_box
       return [] if @x.exists?(@revision.no_gems_box_path)
@@ -58,8 +74,7 @@ class Vigil
           _changes_relative_to_previous_revision_in?('manifests')
         return [@no_gems_box_task, @complete_box_task]
       else
-        _use_old_box :no_gems_box_path, 'VM2'
-        return []
+        return [ReuseBoxTask.new(name: 'VM2', box: :no_gems_box_path), *_setup_complete_box]
       end
     end
 
@@ -68,8 +83,7 @@ class Vigil
           _changes_relative_to_previous_revision_in?('Gemfile*')
         return [@complete_box_task]
       else
-        _use_old_box :complete_box_path, 'VM3'
-        return []
+        return [ReuseBoxTask.new(name: 'VM3', box: :complete_box_path)]
       end
     end
 
