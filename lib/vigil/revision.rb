@@ -43,7 +43,7 @@ class Vigil
     end
 
     def sha
-      @os.backticks "bash -c 'GIT_DIR=#{File.join(working_dir, '.git')} git rev-parse HEAD'" #FIXME
+      @os.backticks("bash -c 'GIT_DIR=#{File.join(working_dir, '.git')} git rev-parse HEAD'").chop #FIXME
     end
 
     def branch
