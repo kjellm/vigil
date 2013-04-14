@@ -5,7 +5,6 @@ class Vigil
 
     def post_initialize(args)
       @vagrant = args.fetch(:vagrant)
-      
     end
 
     def name; 'start_VM'; end
