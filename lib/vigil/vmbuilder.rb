@@ -32,7 +32,9 @@ class Vigil
       tasks = _setup_basebox
       tasks = _setup_no_gems_box if tasks.empty?
       tasks = _setup_complete_box if tasks.empty?
-      tasks.each {|t| t.call }
+      log = []
+      res = Class.new {def self.status; true; end}
+      tasks.each {|t| log << res = t.call if res.status }
     end
     
     def _setup_basebox
