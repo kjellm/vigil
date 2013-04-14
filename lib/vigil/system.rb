@@ -7,6 +7,7 @@ class Vigil
       output = []
       child = nil
       p command
+      ENV['COLUMNS'] = '80' # FIXME workaround bug in progressbar gem used by veewee
       PTY.spawn(*command) do |r, w, pid|
         child = pid
         begin
