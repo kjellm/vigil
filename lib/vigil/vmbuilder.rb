@@ -32,6 +32,7 @@ class Vigil
       log = []
       res = Class.new {def self.status; true; end}
       tasks.each {|t| log << res = t.call if res.status }
+      log
     end
 
     def _tasks
