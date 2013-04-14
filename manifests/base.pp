@@ -3,7 +3,7 @@ class ruby {
   $home = '/home/vagrant'
   $user = 'vagrant'
   $ruby = 'ruby-1.9.3-p392'
-  $rvm_version = 1.19.1
+  $rvm_version = '1.19.1'
   
   Exec {
     logoutput => true,
