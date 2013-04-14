@@ -27,7 +27,7 @@ class Vigil
     end
   
     def run_tests_expectation
-      @os.should_receive('system').with(*['vagrant', 'ssh', '-c', 'cd /vagrant; rake test']).ordered
+      @os.should_receive('system').with(*['vagrant', 'ssh', '-c', 'cd /vagrant; rake']).ordered
     end
   end
 end
