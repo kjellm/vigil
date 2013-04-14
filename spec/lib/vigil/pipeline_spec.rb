@@ -11,12 +11,13 @@ class Vigil
         Vigil.run_dir = "/run"
         Vigil.plugman = double('plugman').as_null_object
         revision = Revision.new(1, Project.new(name: 'znork', os: @os, git_url: '/foo/bar/znork/', branch: 'master'))
+        session = Session.new(revision: revision, plugman: Vigil.plugman, system: System.new)
 
         start_complete_box_expectations
         run_tests_expectation
         vmbuilder = double('vmbuilder')
         vmbuilder.should_receive('run')
-        Pipeline.new(revision, vmbuilder: vmbuilder).run
+        Pipeline.new(session, vmbuilder: vmbuilder).run
       end
     end
   

@@ -13,8 +13,7 @@ class Vigil
     def name; @name; end
    
     def commands
-      s = Session.instance
-      [ ['ln', s.revision.previous.send(@box), s.revision.send(@box) ] ]
+      [ ['ln', @session.revision.previous.send(@box), @session.revision.send(@box) ] ]
     end
     
   end

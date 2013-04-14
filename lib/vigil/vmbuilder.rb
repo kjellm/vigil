@@ -3,18 +3,17 @@ require 'vigil/task'
 class Vigil
   class VMBuilder
 
-    def initialize(revision)
+    def initialize(session)
+      @session = session
+      @revision = @session.revision
       @x = Vigil.os
-      @plugman = Vigil.plugman
-      @revision = revision
       @previous_revision = @revision.previous
       @git = Git.new
       @vagrant = Vagrant.new
-      Session.instance.revision = @revision
 
-      @basebox_task = BaseboxTask.new(revision: @revision)
-      @no_gems_box_task = NoGemsBoxTask.new(revision: @revision)
-      @complete_box_task = CompleteBoxTask.new(revision: @revision)
+      @basebox_task = BaseboxTask.new(@session)
+      @no_gems_box_task = NoGemsBoxTask.new(@session)
+      @complete_box_task = CompleteBoxTask.new(@session)
     end
 
     def run
@@ -38,7 +37,7 @@ class Vigil
     def _tasks
       # Use NullTasks to notify plugins that a task is done without actually do anything.
       if @x.exists?(@revision.complete_box_path)
-        [ NullTask.new(name: 'VM1'), NullTask.new(name: 'VM2'), NullTask.new(name: 'VM3') ]
+        [ NullTask.new(@session, name: 'VM1'), NullTask.new(@session, name: 'VM2'), NullTask.new(@session, name: 'VM3') ]
       else
         _setup_basebox
       end
@@ -47,9 +46,9 @@ class Vigil
     def _setup_basebox
       name = 'VM1'
       if @x.exists? @revision.base_box_path
-        [NullTask.new(name: name), *_setup_no_gems_box]
+        [NullTask.new(@session, name: name), *_setup_no_gems_box]
       elsif @x.exists?(@previous_revision.base_box_path) and !_changes_relative_to_previous_revision_in?('definitions')
-        [ReuseBoxTask.new(name: name, box: :base_box_path), *_setup_no_gems_box]
+        [ReuseBoxTask.new(@session, name: name, box: :base_box_path), *_setup_no_gems_box]
       else
         [@basebox_task, @no_gems_box_task, @complete_box_task]
       end
@@ -58,12 +57,12 @@ class Vigil
     def _setup_no_gems_box
       name = 'VM2'
       if @x.exists?(@revision.no_gems_box_path)
-        [NullTask.new(name: name), *_setup_complete_box]
+        [NullTask.new(@session, name: name), *_setup_complete_box]
       elsif !@x.exists?(@previous_revision.no_gems_box_path) or
           _changes_relative_to_previous_revision_in?('manifests')
         [@no_gems_box_task, @complete_box_task]
       else
-        [ReuseBoxTask.new(name: name, box: :no_gems_box_path), *_setup_complete_box]
+        [ReuseBoxTask.new(@session, name: name, box: :no_gems_box_path), *_setup_complete_box]
       end
     end
 
@@ -73,7 +72,7 @@ class Vigil
           _changes_relative_to_previous_revision_in?('Gemfile*')
         @complete_box_task
       else
-        ReuseBoxTask.new(name: name, box: :complete_box_path)
+        ReuseBoxTask.new(@session, name: name, box: :complete_box_path)
       end
     end
 

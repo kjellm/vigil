@@ -46,14 +46,14 @@ class Vigil
     
     end
   
-    def initialize(revision)
-      Session.instance.revision = revision
+    def initialize(session)
+      @session = session
     end
 
     def run
       log = []
-      log << res = InstallGemsTask.new.call
-      log << res = TestTask.new.call if res.status
+      log << res = InstallGemsTask.new(@session).call
+      log << res = TestTask.new(@session).call if res.status
   
       return Report.new(res.status, log)
     end

@@ -3,9 +3,8 @@ require 'ostruct'
 class Vigil
   class Task
     
-    def initialize(args={})
-      @env = args[:env] || Environment.instance
-      @session = args[:session] || Session.instance
+    def initialize(session, args={})
+      @session = session
       post_initialize(args)
     end
     
@@ -15,7 +14,7 @@ class Vigil
       res = Class.new {def self.status; true; end}
       commands.each do |cmd|
         if res.status
-          res = @env.system.run_command(cmd)
+          res = @session.system.run_command(cmd)
           log << OpenStruct.new(command: cmd, result: res)
         end
       end
@@ -39,7 +38,7 @@ class Vigil
     end
 
     def notify(msg, *args)
-      @env.plugman.notify(msg, @session.revision.project_name, *args)
+      @session.plugman.notify(msg, @session.revision.project_name, *args)
     end
 
   end

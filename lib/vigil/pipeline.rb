@@ -1,11 +1,10 @@
 class Vigil
   class Pipeline
     
-    def initialize(revision, args={})
+    def initialize(session, args={})
       @os = Vigil.os
-      @revision = revision
-      @vmbuilder = args[:vmbuilder] || VMBuilder.new(@revision)
-      @plugman = Vigil.plugman
+      @session = session
+      @vmbuilder = args[:vmbuilder] || VMBuilder.new(@session)
       @git = Git.new
       @vagrant = args[:vagrant] || Vagrant.new
     end
@@ -18,8 +17,8 @@ class Vigil
     end
   
     def _start_vm
-      @os.system(*@vagrant.add_box(@revision.complete_box_name, @revision.complete_box_path))
-      @os.system(*@vagrant.use(@revision.complete_box_name))
+      @os.system(*@vagrant.add_box(@session.revision.complete_box_name, @session.revision.complete_box_path))
+      @os.system(*@vagrant.use(@session.revision.complete_box_name))
       @os.system(*@vagrant.up)
     end
   
@@ -43,7 +42,7 @@ class Vigil
     end
 
     def notify(msg, *args)
-      @plugman.notify(msg, @revision.project_name, *args)
+      @session.plugman.notify(msg, @session.revision.project_name, *args)
     end
 
   end

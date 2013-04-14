@@ -19,7 +19,8 @@ class Vigil
     after :each do
       project = Project.new(name: 'znork', os: @os, run_dir: "/run", git_url: '/foo/bar/znork/', branch: 'master')
       revision = Revision.new(1, project)
-      VMBuilder.new(revision).run
+      session = Session.new(revision: revision, plugman: Vigil.plugman, system: @sys)
+      VMBuilder.new(session).run
     end
   
     context "When the VM has already been built" do

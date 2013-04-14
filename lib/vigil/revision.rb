@@ -19,7 +19,8 @@ class Vigil
       @os.mkdir_p @run_dir_boxes
       pipeline = @project.type == 'gem' ? GemPipeline : Pipeline
       @os.chdir working_dir
-      report = pipeline.new(self).run
+      session = Session.new(plugman: Vigil.plugman, system: System.new, revision: self)
+      report = pipeline.new(session).run
       File.open( '.vigil.log', 'w' ) do |out|
         YAML.dump(report, out)
       end
