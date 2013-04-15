@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem "dcell", "> 0.13.0.pre"
-gem "plugman"
+gem "plugman", "~> 1.0.2"
 gem "toml"
 gem "trollop"
 gem "vagrant"

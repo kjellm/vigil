@@ -2,7 +2,7 @@ require 'dcell'
 
 class Vigil
   module Plugin
-    class DCell
+    class DCell < Plugman::PluginBase
       include Celluloid
       include Celluloid::Logger
 
