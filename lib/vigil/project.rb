@@ -39,7 +39,11 @@ class Vigil
     def most_recent_revision
       @revision_repository.most_recent_revision
     end
-
+    
+    def revisions
+      @revision_repository.all
+    end
+    
     def run_pipeline
       @os.mkdir_p @working_dir
       revision = @revision_repository.new

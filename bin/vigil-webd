@@ -111,6 +111,11 @@ class WebServer < Reel::Server
 
   def render_project(name, connection)
     project = @vigil.project(name)
+    data = {
+      name: project.name,
+      readme: project.readme,
+      reports: project.revisions.map {|r| r.report},
+    }
     unless project
       info "404 Not Found: FIXME"
       return connection.respond :not_found, "Not found"

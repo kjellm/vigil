@@ -87,6 +87,10 @@ class Vigil
       git.differs2? branch, sha
     end
   
+    def report
+      YAML.load_file(File.join(working_dir, '.vigil.log'))
+    end
+
   end
 end
 

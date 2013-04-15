@@ -5,54 +5,38 @@
     <meta charset="utf-8">
     <title>Vigil</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script>
-      var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
-      var ws = new SocketKlass('ws://' + window.location.host + '/messages');
-      ws.onmessage = function(msg){
-        console.log(msg.data);
-        var data = msg.data.split('.');
-        var project = data[0];
-        var task = data[1];
-        var status = data[2];
-        if (task === "build" && status === "started") {
-          $("#" + project + " li").removeClass();
-        }
-        else {
-          var klass = "failed";
-          if (status === "started") {
-            klass = "running";
-          }
-          else if (status === "done") {
-            klass = "ok";
-          }
-           
-          $("#" + project + "-" + task).removeClass();
-          $("#" + project + "-" + task).addClass(klass);
-        }
-        $('#info').text(msg.data);
-      }
-    </script>
+    <script src="/static/main.js"></script>
     <link rel="stylesheet" href="/static/main.css" type="text/css" />
   </head>
   <body>
     <h1 id="title">Vigil</h1>
 
     <div id="content">
-      <h2><%= project.name.capitalize %></h2>
+      <h2><%= data[:name].capitalize %></h2>
       
-      <ol id="<%= project.name %>" class="pipeline">
-        <li id="<%= project.name %>-bundle">Bundler</li>
-        <li id="<%= project.name %>-tests">Tests</li>
+      <ol id="<%= data[:name] %>" class="pipeline">
+        <li id="<%= data[:name] %>-bundle">Bundler</li>
+        <li id="<%= data[:name] %>-tests">Tests</li>
         <li>Release gem</li>
       </ol>
 
       <h3>Stuff</h3>
       <ul>
-        <li><a href="/coverage/<%= project.name %>/<%= project.name %>">Coverage</a></li>
+        <li><a href="/coverage/<%= data[:name] %>/<%= data[:name] %>">Coverage</a></li>
       </ul>
 
 
       <h3>Builds</h3>
+
+      <table>
+        <% data[:reports].each do |r| %>
+        <tr>
+          <% r.log.each do |t| %>
+          <td class="<%= t.status ? 'ok' : 'failed' %>"><%= t.name %></td>
+          <% end %>
+        </tr>
+        <% end %>
+      </table>
 
       <table>
         <tr>

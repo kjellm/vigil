@@ -10,6 +10,10 @@ class Vigil
       Revision.new(most_recent_revision.id+1, @project)
     end
 
+    def all
+      _entries.map {|id| Revision.new(id, @project)}
+    end
+    
     def empty?
       _entries.empty?
     end

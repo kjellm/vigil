@@ -11,7 +11,7 @@ class Vigil
       log = []
       res = Class.new {def self.status; true; end}
       tasks.each {|t| log << res = t.call if res.status }
-      log
+      return Report.new(res.status, log)
     end
   
     private
