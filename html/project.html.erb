@@ -32,7 +32,7 @@
         <% data[:reports].each do |r| %>
         <tr>
           <% r[:log].each do |t| %>
-          <td class="<%= t.status ? 'ok' : 'failed' %>"><%= t.name %></td>
+          <td class="<%= t[:status] ? 'ok' : 'failed' %>"><%= t.name %></td>
           <% end %>
         </tr>
         <% end %>
