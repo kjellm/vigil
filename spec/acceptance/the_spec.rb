@@ -51,7 +51,7 @@ EOF
           v.run
           Dir.entries(File.join(run_dir, 'test')).should include('1', 'repo.git')
           Dir.entries(File.join(run_dir, 'test', 'repo.git')).should include('objects') #FIXME isa git repo
-          Dir.entries(File.join(run_dir, 'test', '1')).should include('Rakefile', '.vigil.log')
+          Dir.entries(File.join(run_dir, 'test', '1')).should include('Rakefile', '.vigil.yml')
         ensure
           Dir.chdir(cwd) # FIXME should not need to reset cwd here
         end
@@ -90,7 +90,7 @@ EOF
           v.run
       
           Dir.entries(File.join(run_dir, 'test')).should include('1', '2', 'repo.git')
-          Dir.entries(File.join(run_dir, 'test', '2')).should include('Rakefile', 'README.md', '.vigil.log')
+          Dir.entries(File.join(run_dir, 'test', '2')).should include('Rakefile', 'README.md', '.vigil.yml')
         ensure
           Dir.chdir(cwd) # FIXME should not need to reset cwd here
         end

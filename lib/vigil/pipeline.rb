@@ -8,7 +8,7 @@ class Vigil
 
     def run
       notify(:build_started)
-      log = []
+      log = Log.new
       res = Class.new {def self.status; true; end}
       tasks.each {|t| log << res = t.call if res.status }
       return Report.new(res.status, log)

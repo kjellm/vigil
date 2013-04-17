@@ -24,16 +24,8 @@ class Vigil
         end
       end
       puts "#{child} #$?"
-      return CommandResult.new($?.exitstatus == 0, output.join(""), $?.clone)
+      return CommandResult.new(command, $?.exitstatus == 0, output.join(""), $?.clone)
     end
 
-    def run_command2(command)
-      output = ''
-      IO.popen([*command, :err=>[:child, :out]]) do |io|
-        output = io.read
-      end
-      return CommandResult.new($?.exitstatus == 0, output, $?.clone)
-    end
-    
   end
 end

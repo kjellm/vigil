@@ -1,4 +1,5 @@
 require 'plugman'
+#require 'pry-exception_explorer'
 
 Dir[File.join(File.dirname(__FILE__), 'vigil/**/*.rb')].each do |file| 
   dir = File.dirname(file)[File.dirname(__FILE__).length+1..-1]
@@ -37,6 +38,7 @@ class Vigil
   end
   
   def run
+    #EE.wrap do
     @os.mkdir_p Vigil.run_dir
     @loop.call do
       @log.debug "LOOP"
@@ -45,6 +47,7 @@ class Vigil
         p.run_pipeline if p.new_revision?
       end
     end
+    #end
   end
 
   def project(name)

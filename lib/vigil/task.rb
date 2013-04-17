@@ -10,16 +10,15 @@ class Vigil
     
     def call
       task_started
-      log = []
+      log = Log.new
       res = Class.new {def self.status; true; end}
       commands.each do |cmd|
         if res.status
-          res = @session.system.run_command(cmd)
-          log << OpenStruct.new(command: cmd, result: res)
+          log << res = @session.system.run_command(cmd)
         end
       end
       task_done
-      return OpenStruct.new(name: name, status: res.status, log: log)
+      return TaskReport.new(name, res.status, log)
     end
     
     private

@@ -1,18 +1,21 @@
 class Vigil
-  class Report
+  class TaskReport
 
+    attr_reader :name
     attr_reader :status
     attr_reader :log
     
-    def initialize(status, log)
+    def initialize(name, status, log)
+      @name = name
       @status = status
       @log = log
     end
     
     def serialize
       {
+        name: @name,
         status: @status,
-        log: @log.serialize,
+        log: @log.serialize
       }
     end
 

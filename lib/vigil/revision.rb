@@ -21,9 +21,10 @@ class Vigil
       @os.chdir working_dir
       session = Session.new(plugman: Vigil.plugman, system: System.new, revision: self)
       report = pipeline.new(session).run
-      File.open( '.vigil.log', 'w' ) do |out|
-        YAML.dump(report, out)
+      File.open( '.vigil.yml', 'w' ) do |out|
+        YAML.dump(report.serialize, out)
       end
+      report
     end
 
     def _git_clone

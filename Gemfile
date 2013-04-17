@@ -9,7 +9,7 @@ gem "veewee"
 gem "redcarpet"
 
 group :test do
-  gem 'coveralls', require: false
+  gem 'coveralls'
   gem "rake"
   gem "rspec"
 end
@@ -17,6 +17,9 @@ end
 group :development do
   gem "simplecov"
   gem "guard-rspec"
+  gem "pry"
+  gem "awesome_print"
+  gem "pry-exception_explorer"
   if RUBY_PLATFORM.downcase.include?("darwin")
     gem 'rb-fsevent'
     gem 'terminal-notifier-guard'
