@@ -89,7 +89,7 @@ class Vigil
     end
   
     def report
-      YAML.load_file(File.join(working_dir, '.vigil.log'))
+      YAML.load_file(File.join(working_dir, '.vigil.yml'))
     end
 
   end
