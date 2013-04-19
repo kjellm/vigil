@@ -12,11 +12,13 @@ group :test do
   gem 'coveralls'
   gem "rake"
   gem "rspec"
+  gem "cucumber"
 end
 
 group :development do
   gem "simplecov"
   gem "guard-rspec"
+  gem "guard-cucumber"
   gem "pry"
   gem "awesome_print"
   gem "pry-exception_explorer"
