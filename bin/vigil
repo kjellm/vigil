@@ -8,5 +8,5 @@ opts = Trollop::options do
   opt :rcfile, "Path to the configuration file"
 end
 
-Vigil.new(opts).run
+Vigil.new(opts).start
 

@@ -1,22 +1,26 @@
 class Vigil
   class ProjectRepository
 
-    def initialize(config)
+    def initialize(env)
       @projects = {}
-      
-      config.opts['projects'].each do |k, v|
+      env.config.opts['projects'].each do |k, v|
         @projects[k] = Project.new(
           name: k,
           git_url: v['url'],
           branch: v['branch'],
           type: v['type'],
+          env: env
         )
       end
     end
 
-    def find(name); @projects[name]; end
+    def find(name)
+      @projects.fetch(name)
+    end
 
-    def to_a; @projects.values; end
+    def each(&block)
+      @projects.values.each(&block)
+    end
     
   end
 end

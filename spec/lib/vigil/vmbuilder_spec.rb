@@ -16,9 +16,10 @@ class Vigil
     end
   
     after :each do
-      project = Project.new(name: 'znork', os: @os, run_dir: "/run", git_url: '/foo/bar/znork/', branch: 'master')
-      revision = Revision.new(1, project)
-      session = Session.new(revision: revision, plugman: Vigil.plugman, system: @sys)
+      env = double('env')
+      project = Project.new(name: 'znork', os: @os, run_dir: "/run", git_url: '/foo/bar/znork/', branch: 'master', env: env)
+      revision = Revision.new(env, 1, project)
+      session = Session.new(env: env, revision: revision, plugman: Vigil.plugman, system: @sys)
       VMBuilder.new(session).run
     end
   

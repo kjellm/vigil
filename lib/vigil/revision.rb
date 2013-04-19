@@ -5,9 +5,11 @@ class Vigil
 
     attr_reader :id
     
-    def initialize(id, project)
+    def initialize(env, id, project)
+      @env = env
       @id = id
       @project = project
+
       @run_dir_boxes = File.join(@project.working_dir, 'boxes')
       @os = Vigil.os
       @git_origin = File.join(@project.working_dir, 'repo.git')
@@ -19,7 +21,7 @@ class Vigil
       @os.mkdir_p @run_dir_boxes
       pipeline = @project.type == 'gem' ? GemPipeline : VMPipeline
       @os.chdir working_dir
-      session = Session.new(plugman: Vigil.plugman, system: System.new, revision: self)
+      session = Session.new(env: @env, plugman: Vigil.plugman, system: System.new, revision: self)
       report = pipeline.new(session).run
       File.open( '.vigil.yml', 'w' ) do |out|
         YAML.dump(report.serialize, out)
@@ -33,7 +35,7 @@ class Vigil
     end
   
     def previous
-      Revision.new(@id-1, @project)
+      Revision.new(@env, @id-1, @project)
     end
 
     def working_dir

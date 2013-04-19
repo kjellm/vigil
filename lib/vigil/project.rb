@@ -11,11 +11,13 @@ class Vigil
     def initialize(args)
       @name = args.fetch(:name)
       @git_url = args.fetch(:git_url)
+      @branch = args[:branch] || _default_branch
+      @type = args[:type] || 'default'
+      @env = args.fetch(:env)
+
       @working_dir = File.join(Vigil.run_dir, @name)
       @os = args[:os] || Vigil.os
-      @branch = args[:branch] || _default_branch
-      @revision_repository = args[:revision_repository] || RevisionRepository.new(self)
-      @type = args[:type] || 'default'
+      @revision_repository = args[:revision_repository] || RevisionRepository.new(@env, self)
       @git_repo = File.join(@working_dir, 'repo.git')
       @git = args[:git] || Git.new(bare: true, git_dir: @git_repo)
     end

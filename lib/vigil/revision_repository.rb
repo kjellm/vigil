@@ -1,17 +1,18 @@
 class Vigil
   class RevisionRepository
     
-    def initialize(project)
+    def initialize(env, project)
       @os = Vigil.os
       @project = project
+      @env = env
     end
 
     def new
-      Revision.new(most_recent_revision.id+1, @project)
+      Revision.new(@env, most_recent_revision.id+1, @project)
     end
 
     def all
-      _entries.map {|id| Revision.new(id, @project)}
+      _entries.map {|id| Revision.new(@env, id, @project)}
     end
     
     def empty?
@@ -21,7 +22,7 @@ class Vigil
     def most_recent_revision
       id = _entries.sort.last
       id ||= 0
-      Revision.new(id, @project)
+      Revision.new(@env, id, @project)
     end
 
     def _entries

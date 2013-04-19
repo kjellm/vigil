@@ -11,7 +11,7 @@ class Vigil
           project_name: 'znork',
           complete_box_path: '/the/complete/box',
           complete_box_name: 'the_box')
-        session = Session.new(revision: revision, plugman: plugman, system: @sys)
+        session = Session.new(env: double('env'), revision: revision, plugman: plugman, system: @sys)
         vmbuilder = double('vmbuilder')
         vmbuilder.should_receive('run')
 

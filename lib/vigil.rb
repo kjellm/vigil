@@ -28,21 +28,20 @@ class Vigil
     @config = Config.new(args)
     Vigil.os = args[:os] if args[:os]
     Vigil.run_dir = @config[:run_dir] if @config[:run_dir]
-    Vigil.plugman = Plugman.new(logger: Vigil.logger, loader: Plugman::ConfigLoader.new(@config['plugins']))
-    Vigil.plugman.load_plugins
     Vigil.logger = args[:logger] if args[:logger]
-    @project_repository = ProjectRepository.new(@config)
+    initialize_plugman
+    @env = Environment.new(logger: Vigil.logger, config: @config, plugman: Vigil.plugman, system: System.new)
+    @project_repository = ProjectRepository.new(@env)
     @os = Vigil.os
     @loop = args[:loop] || Poll.new(60)
-    @log = Vigil.logger
   end
-  
-  def run
+
+  def start
     #EE.wrap do
     @os.mkdir_p Vigil.run_dir
     @loop.call do
-      @log.debug "LOOP"
-      @project_repository.to_a.each do |p|
+      @env.log.info "Polling projects"
+      @project_repository.each do |p|
         p.synchronize
         p.run_pipeline if p.new_revision?
       end
@@ -56,6 +55,13 @@ class Vigil
 
   def latest_revision(project_name)
     project(project_name).most_recent_revision
+  end
+
+  private
+
+  def initialize_plugman
+    Vigil.plugman = Plugman.new(logger: Vigil.logger, loader: Plugman::ConfigLoader.new(@config['plugins']))
+    Vigil.plugman.load_plugins
   end
 
 end
