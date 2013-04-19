@@ -14,6 +14,7 @@ class Vigil
     
     def serialize
       {
+        command: @command,
         status: @status,
         output: @output,
       }
