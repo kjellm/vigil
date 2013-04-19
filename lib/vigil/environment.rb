@@ -1,15 +1,16 @@
-require 'singleton'
-
 class Vigil
   class Environment
-    include Singleton
   
-    attr_accessor :system
-    attr_accessor :plugman
+    attr_reader :config
+    attr_reader :logger
+    attr_reader :plugman
+    attr_reader :system
 
-    def initialize
-      @system = System.new
-      @plugman = Vigil.plugman
+    def initialize(args)
+      @config  = args.fetch(:config)
+      @logger  = args.fetch(:logger)
+      @plugman = args.fetch(:plugman)
+      @system  = args.fetch(:system)
     end
   
   end
