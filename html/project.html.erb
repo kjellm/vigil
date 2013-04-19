@@ -25,6 +25,16 @@
         <li><a href="/coverage/<%= data[:name] %>/<%= data[:name] %>">Coverage</a></li>
       </ul>
 
+      <h3>Report</h3>
+
+      <ol id="report">
+        <% data[:reports].first[:log].each do |tasks| %>
+          <% tasks[:log].each do |commands|%>
+            <li>$ <%= commands[:command].join(" ") %>
+<pre><%= commands[:output].gsub("\r", "") %></pre></li>
+          <% end %>
+        <% end %>
+      </ol>
 
       <h3>Builds</h3>
 
