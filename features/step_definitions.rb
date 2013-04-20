@@ -10,10 +10,9 @@ Around do |scenario, block|
   cwd = Dir.pwd
   Dir.mktmpdir do |test_repo_dir|
     Dir.mktmpdir do |run_dir|
-      Vigil.run_dir = run_dir
       $test_repo_dir = test_repo_dir
       $run_dir = run_dir
-      write_rcfile($rcfile, test_repo_dir)
+      write_rcfile
       $rcfile.close
       block.call
     end
@@ -21,11 +20,12 @@ Around do |scenario, block|
   Dir.chdir(cwd) # FIXME should not need to reset cwd here
 end
 
-def write_rcfile(io, test_repo_dir)
-  io.write(<<EOF)
+def write_rcfile
+  $rcfile.write(<<EOF)
+run_dir = "#$run_dir"
 [projects]
 [projects.test]
-url = "#{test_repo_dir}"
+url = "#$test_repo_dir"
 type = "gem"
 EOF
 end

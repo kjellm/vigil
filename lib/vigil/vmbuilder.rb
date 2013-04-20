@@ -22,8 +22,8 @@ class Vigil
     end
 
     def _setup_iso_cache
-      @x.mkdir_p File.join(Vigil.run_dir, 'iso')
-      @x.system "ln -sf #{File.join(Vigil.run_dir, 'iso')}"
+      @x.mkdir_p File.join(@session.env.run_dir, 'iso')
+      @x.system "ln -sf #{File.join(@session.env.run_dir, 'iso')}"
     end  
 
     def _build_vm
@@ -82,10 +82,6 @@ class Vigil
 
     def _changes_relative_to_previous_revision_in?(files)
       @git.differs?(@previous_revision.sha, files)
-    end
-
-    def task_done(task)
-      @plugman.notify(:task_done, @revision.project_name, task)
     end
 
   end

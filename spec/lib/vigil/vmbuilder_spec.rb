@@ -8,19 +8,16 @@ class Vigil
       Revision.any_instance.stub(sha: 'the_sha')
       @os = double('os')
       Vigil.os = @os
-      Vigil.run_dir = "/run"
-      Vigil.plugman = double('plugman').as_null_object
-      @sys = double('system')
+      env = double('env', run_dir:  "/run").as_null_object
+      project = Project.new(name: 'znork', git_url: '/foo/bar/znork/', branch: 'master', env: env)
+      @session = double('session', env: env).as_null_object
+      @session.stub(revision: Revision.new(env, 1, project))
       @os.should_receive('mkdir_p').with("/run/iso").ordered
       @os.should_receive('system').with("ln -sf /run/iso").ordered
     end
   
     after :each do
-      env = double('env')
-      project = Project.new(name: 'znork', os: @os, run_dir: "/run", git_url: '/foo/bar/znork/', branch: 'master', env: env)
-      revision = Revision.new(env, 1, project)
-      session = Session.new(env: env, revision: revision, plugman: Vigil.plugman, system: @sys)
-      VMBuilder.new(session).run
+      VMBuilder.new(@session).run
     end
   
     context "When the VM has already been built" do
@@ -118,7 +115,7 @@ class Vigil
     end
 
     def expect_command(args)
-      @sys.should_receive('run_command').with(args).ordered.and_return(double('res', status: true))
+      @session.should_receive('run_command').with(args).ordered.and_return(double('res', status: true))
     end
   
   end

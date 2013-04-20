@@ -12,5 +12,13 @@ class Vigil
       @system  = args.fetch(:system)
     end
   
+    def notify(*args)
+      @plugman.notify(*args)
+    end
+
+    def run_dir
+      @config['run_dir']
+    end
+
   end
 end

@@ -15,18 +15,18 @@ class Vigil
       @type = args[:type] || 'default'
       @env = args.fetch(:env)
 
-      @working_dir = File.join(Vigil.run_dir, @name)
-      @os = args[:os] || Vigil.os
+      @working_dir = File.join(@env.run_dir, @name)
       @revision_repository = args[:revision_repository] || RevisionRepository.new(@env, self)
       @git_repo = File.join(@working_dir, 'repo.git')
       @git = args[:git] || Git.new(bare: true, git_dir: @git_repo)
+      @sys = @env.system
     end
 
     def _default_branch; 'master'; end
 
     def synchronize
-      @os.mkdir_p @working_dir
-      if @os.exists?(@git_repo)
+      @sys.mkdir_p @working_dir
+      if @sys.exists?(@git_repo)
         @git.fetch
       else
         @git.clone(@git_url, @git_repo, '--mirror')
@@ -47,9 +47,9 @@ class Vigil
     end
     
     def run_pipeline
-      @os.mkdir_p @working_dir
+      @sys.mkdir_p @working_dir
       revision = @revision_repository.new
-      revision.run_pipeline(@type)
+      revision.run_pipeline
     end
 
     def readme

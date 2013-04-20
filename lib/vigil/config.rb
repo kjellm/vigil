@@ -3,8 +3,6 @@ require 'toml'
 class Vigil
   class Config
 
-    attr_reader :opts
-
     def initialize(opts={})
       root = File.join(File.dirname(__FILE__), '..', '..')
       p root
@@ -13,6 +11,8 @@ class Vigil
       end
 
       @opts = TOML.load_file(opts[:rcfile]).merge(opts)
+      @opts['run_dir'] ||= File.expand_path('run') # FIXME make absolute
+      @opts
     end
 
     def [](key)

@@ -14,7 +14,7 @@ class Vigil
       res = Class.new {def self.status; true; end}
       commands.each do |cmd|
         if res.status
-          log << res = @session.system.run_command(cmd)
+          log << res = @session.run_command(cmd)
         end
       end
       task_done
@@ -37,7 +37,7 @@ class Vigil
     end
 
     def notify(msg, *args)
-      @session.plugman.notify(msg, @session.revision.project_name, *args)
+      @session.notify(msg, @session.revision.project_name, *args)
     end
 
   end

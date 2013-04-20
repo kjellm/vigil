@@ -3,7 +3,7 @@ class Vigil
 
     def initialize(env)
       @projects = {}
-      env.config.opts['projects'].each do |k, v|
+      env.config['projects'].each do |k, v|
         @projects[k] = Project.new(
           name: k,
           git_url: v['url'],

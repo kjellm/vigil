@@ -12,25 +12,20 @@ class Vigil
   
   class << self
     attr_accessor :os
-    attr_accessor :run_dir
-    attr_accessor :plugman
     attr_accessor :logger
   end
 
   begin
-    Vigil.os = Vigil::OS.new
-    Vigil.run_dir = File.expand_path('run')
+    Vigil.os = Vigil::System.new
     Vigil.logger = Logger.new($stderr)
-    Vigil.plugman = Plugman.new(logger: Vigil.logger)
   end
 
   def initialize(args = {})
     @config = Config.new(args)
     Vigil.os = args[:os] if args[:os]
-    Vigil.run_dir = @config[:run_dir] if @config[:run_dir]
     Vigil.logger = args[:logger] if args[:logger]
-    initialize_plugman
-    @env = Environment.new(logger: Vigil.logger, config: @config, plugman: Vigil.plugman, system: System.new)
+    @plugman = initialize_plugman
+    @env = Environment.new(logger: Vigil.logger, config: @config, plugman: @plugman, system: System.new)
     @project_repository = ProjectRepository.new(@env)
     @os = Vigil.os
     @loop = args[:loop] || Poll.new(60)
@@ -38,7 +33,7 @@ class Vigil
 
   def start
     #EE.wrap do
-    @os.mkdir_p Vigil.run_dir
+    @os.mkdir_p @env.run_dir
     @loop.call do
       @env.log.info "Polling projects"
       @project_repository.each do |p|
@@ -60,8 +55,9 @@ class Vigil
   private
 
   def initialize_plugman
-    Vigil.plugman = Plugman.new(logger: Vigil.logger, loader: Plugman::ConfigLoader.new(@config['plugins']))
-    Vigil.plugman.load_plugins
+    p = Plugman.new(logger: Vigil.logger, loader: Plugman::ConfigLoader.new(@config['plugins']))
+    p.load_plugins
+    p
   end
 
 end

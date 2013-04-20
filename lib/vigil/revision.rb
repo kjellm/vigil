@@ -10,18 +10,18 @@ class Vigil
       @id = id
       @project = project
 
-      @run_dir_boxes = File.join(@project.working_dir, 'boxes')
-      @os = Vigil.os
+      @boxes_dir = File.join(@project.working_dir, 'boxes')
       @git_origin = File.join(@project.working_dir, 'repo.git')
       @git = Git.new(git_dir: File.join(working_dir, '.git'), work_tree: working_dir)
+      @sys = @env.system
     end
   
-    def run_pipeline(type='default')
+    def run_pipeline
       _git_clone
-      @os.mkdir_p @run_dir_boxes
+      @sys.mkdir_p @boxes_dir
       pipeline = @project.type == 'gem' ? GemPipeline : VMPipeline
-      @os.chdir working_dir
-      session = Session.new(env: @env, plugman: Vigil.plugman, system: System.new, revision: self)
+      @sys.chdir working_dir
+      session = Session.new(env: @env, revision: self)
       report = pipeline.new(session).run
       File.open( '.vigil.yml', 'w' ) do |out|
         YAML.dump(report.serialize, out)
@@ -47,7 +47,7 @@ class Vigil
     end
 
     def sha
-      @os.backticks("bash -c 'GIT_DIR=#{File.join(working_dir, '.git')} git rev-parse HEAD'").chop #FIXME
+      @sys.backticks("bash -c 'GIT_DIR=#{File.join(working_dir, '.git')} git rev-parse HEAD'").chop #FIXME
     end
 
     def branch
@@ -83,7 +83,7 @@ class Vigil
     end
   
     def _box_path(box)
-      File.join(@run_dir_boxes, box)
+      File.join(@boxes_dir, box)
     end
   
     def differs?(git)

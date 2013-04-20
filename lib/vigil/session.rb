@@ -2,15 +2,19 @@ class Vigil
   class Session
 
     attr_accessor :env
-    attr_accessor :plugman
     attr_accessor :revision
-    attr_accessor :system
 
     def initialize(args)
       @env      = args.fetch(:env)
-      @plugman  = args.fetch(:plugman)
       @revision = args.fetch(:revision)
-      @system   = args.fetch(:system)
+    end
+
+    def notify(*args)
+      @env.notify(*args)
+    end
+
+    def run_command(command)
+      @env.system.run_command(command)
     end
 
   end

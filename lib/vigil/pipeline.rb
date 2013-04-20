@@ -21,7 +21,7 @@ class Vigil
     def tasks; raise "Abstract method called"; end
 
     def notify(msg, *args)
-      @session.plugman.notify(msg, @session.revision.project_name, *args)
+      @session.notify(msg, @session.revision.project_name, *args)
     end
 
   end
