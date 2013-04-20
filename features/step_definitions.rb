@@ -39,6 +39,7 @@ Given(/^a minimal git repository$/) do
   git.cmd('config user.email "you@example.com"')
   git.cmd('config user.name "Your Name"')
   File.write(File.join($test_repo_dir, 'Rakefile'), "task(:default) {true}")
+  File.write(File.join($test_repo_dir, 'Gemfile'), "source 'https://rubygems.org'\ngem 'rake'")
   git.cmd("add .")
   git.cmd('commit -m "commit message goes here"')
 end

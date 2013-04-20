@@ -8,19 +8,21 @@ class Vigil
       child = nil
       p command
       ENV['COLUMNS'] = '80' # FIXME workaround bug in progressbar gem used by veewee
-      PTY.spawn(*command) do |r, w, pid|
-        child = pid
-        begin
-          # Do stuff with the output here. Just printing to show it works
-          r.each do |line|
-            break if line.nil? # Happens on BSD
-            print line
-            output << line
+      Bundler.with_clean_env do
+        PTY.spawn(*command) do |r, w, pid|
+          child = pid
+          begin
+            # Do stuff with the output here. Just printing to show it works
+            r.each do |line|
+              break if line.nil? # Happens on BSD
+              print line
+              output << line
+            end
+          rescue Errno::EIO
+            # Happens on Linux
+          ensure
+            Process::wait(pid)
           end
-        rescue Errno::EIO
-          # Happens on Linux
-        ensure
-          Process::wait(pid)
         end
       end
       puts "#{child} #$?"
