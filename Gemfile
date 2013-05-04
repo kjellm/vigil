@@ -1,12 +1,13 @@
 source 'https://rubygems.org'
 
-gem "dcell", "> 0.13.0.pre"
+gem "dcell", "~> 0.13.0"
 gem "plugman", "~> 1.0.2"
 gem "toml"
 gem "trollop"
 gem "vagrant"
 gem "veewee"
 gem "redcarpet"
+gem "logging"
 
 group :test do
   gem 'coveralls'

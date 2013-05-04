@@ -1,5 +1,6 @@
 require 'plugman'
 #require 'pry-exception_explorer'
+require 'logging'
 
 Dir[File.join(File.dirname(__FILE__), 'vigil/**/*.rb')].each do |file| 
   dir = File.dirname(file)[File.dirname(__FILE__).length+1..-1]
@@ -17,7 +18,7 @@ class Vigil
 
   begin
     Vigil.os = Vigil::System.new
-    Vigil.logger = Logger.new($stderr)
+    Vigil.logger = Logging.logger($stderr)
   end
 
   def initialize(args = {})
