@@ -13,7 +13,7 @@ class Vigil
       end
 
       def commands
-        [%w(bundle install)]
+        [%w(bundle install --without development)]
       end
     
     end

@@ -109,7 +109,7 @@ class Vigil
       expect_command(['ruby', '-pi', '-e', %Q{sub(/(config.vm.box = )"[^"]+"/, "\\\\1\\"znork-1_no_gems\\"")}, 'Vagrantfile'])
       expect_command(%w(vagrant up))
       expect_command(['vagrant', 'ssh', '-c', 'sudo gem install bundler'])
-      expect_command(['vagrant', 'ssh', '-c', 'cd /vagrant/; bundle install'])
+      expect_command(['vagrant', 'ssh', '-c', 'cd /vagrant/; bundle install --without development'])
       expect_command(%w(vagrant package --output /run/znork/boxes/znork-1_complete.pkg))
       expect_command(%w(vagrant box remove znork-1_no_gems))
     end

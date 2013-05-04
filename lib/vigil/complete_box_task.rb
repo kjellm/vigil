@@ -15,7 +15,7 @@ class Vigil
        vagrant.use(revision.no_gems_box_name),
        vagrant.up,
        vagrant.ssh('sudo gem install bundler'),
-       vagrant.ssh('cd /vagrant/; bundle install'),
+       vagrant.ssh('cd /vagrant/; bundle install --without development'),
        vagrant.package(revision.complete_box_path),
        vagrant.remove_box(revision.no_gems_box_name),
       ]
