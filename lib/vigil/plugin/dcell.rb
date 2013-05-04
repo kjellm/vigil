@@ -6,7 +6,12 @@ class Vigil
       include Celluloid
       include Celluloid::Logger
 
+      def self.new
+        raise
+      end
+
       def initialize
+        raise
         ::DCell.start :id => "vigil", :addr => "tcp://127.0.0.1:1234"
         @node = ::DCell::Node["vigil_web_server"]
         @inbox_service = @node[:inbox]

@@ -8,8 +8,9 @@ class Vigil
     
       def initialize(host = "0.0.0.0", port = 1236)
         info "Web server starting on #{host}:#{port}"
-        @vigil = Vigil.new
         @config = Vigil::Config.new
+        @env = Environment.new(logger: Vigil.logger, config: @config, plugman: nil, system: System.new)
+        @project_repository = ProjectRepository.new(@env)
         super(host, port, &method(:on_connection))
       end
     
@@ -37,9 +38,9 @@ class Vigil
           return static(connection, request, $1)
         when /coverage\/([^\/]*)\/?(.*)?/
           if $1 == $2
-            return static(connection, request, File.join(@vigil.latest_revision($1).working_dir, 'coverage/index.html'))
+            return static(connection, request, File.join(@project_repository.find($1).most_recent_revision.working_dir, 'coverage/index.html'))
           else
-            return static(connection, request, File.join(@vigil.latest_revision($1).working_dir, 'coverage', $2))
+            return static(connection, request, File.join(@project_repository.find($1).most_recent_revision.working_dir, 'coverage', $2))
           end
         end
         info "HERE"
@@ -69,13 +70,13 @@ class Vigil
     
       def render_index(connection)
         info "200 OK: /"
-        projects = @config.opts["projects"].keys
+        projects = @config["projects"].keys
         html = ERB.new(File.read("html/list.html.erb")).result(binding)
         connection.respond :ok, html
       end
     
       def render_project(name, connection)
-        project = @vigil.project(name)
+        project = @project_repository.find(name)
         data = {
           name: project.name,
           readme: project.readme,

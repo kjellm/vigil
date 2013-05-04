@@ -1,3 +1,5 @@
+require 'celluloid'
+
 class Vigil
   module Web
     class Inbox
