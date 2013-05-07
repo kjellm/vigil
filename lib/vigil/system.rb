@@ -3,6 +3,10 @@ require 'fileutils'
 
 class Vigil
   class System
+
+    def initialize()
+      @log = Logging.logger[self]
+    end
     
     def run_command(command)
       output = []
@@ -31,9 +35,9 @@ class Vigil
     end
 
     def system(*cmd)
-      Vigil.logger.info "$ #{cmd}"
+      @log.info "$ #{cmd}"
       stat = super *cmd
-      Vigil.logger.info "Exitstatus: #{stat} #{$?.inspect}"
+      @log.info "Exitstatus: #{stat} #{$?.inspect}"
       unless stat
         block_given? ? yield($?) : raise("Failed")
       end
@@ -41,9 +45,9 @@ class Vigil
     end
     
     def backticks(cmd)
-      Vigil.logger.info "$ #{cmd}"
+      @log.info "$ #{cmd}"
       output = `#{cmd}`
-      Vigil.logger.info "Exitstatus: #{$?.inspect}"
+      @log.info "Exitstatus: #{$?.inspect}"
       raise "Failed: #{$?.exitstatus}" if $?.exitstatus != 0
       output
     end
