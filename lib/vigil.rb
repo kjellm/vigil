@@ -25,6 +25,8 @@ class Vigil
     @config = Config.new(args)
     Vigil.os = args[:os] if args[:os]
     Vigil.logger = args[:logger] if args[:logger]
+    Logging.logger.root.appenders = Logging.appenders.stderr
+    Logging.logger.root.level = :info
     @plugman = initialize_plugman
     @env = Environment.new(logger: Vigil.logger, config: @config, plugman: @plugman, system: System.new)
     @project_repository = ProjectRepository.new(@env)
